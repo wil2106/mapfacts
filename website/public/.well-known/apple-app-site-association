@@ -1,0 +1,26 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "JAFCAD4JA2.com.wil2106.mapfacts",
+        "paths": ["/app/*"]
+      }
+    ]
+  },
+  "activitycontinuation": {
+    "apps": [
+      "JAFCAD4JA2.com.wil2106.mapfacts"
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "JAFCAD4JA2.com.wil2106.mapfacts"
+    ]
+  },
+  "appclips": {
+    "apps": [
+      "JAFCAD4JA2.com.wil2106.mapfacts"
+    ]
+  }
+}

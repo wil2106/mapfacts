@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id
+  createdAt DateTime @default(now())
+  lastLoginAt DateTime @default(now())
+  pushToken String?
+  radarEnabled Boolean @default(false)
+  radarMinUpvotes Int @default(10)
+  radarCooldownS Int @default(0)
+  lastRadarNotificationAt DateTime?
+
+  facts Fact[]
+  votes Vote[] 
+  reports Report[]
+}
+
+model Fact {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  text String
+  radiusM Int
+  location Unsupported("geography(POINT)")
+  angleD Float
+  author  User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+  
+  votes Vote[]
+  reports Report[]
+}
+
+model Vote {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  isUp Boolean
+  fact  Fact @relation(fields: [factId], references: [id], onDelete: Cascade)
+  factId BigInt
+  author  User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+}
+
+model Report {
+  id BigInt @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  reason String?
+  fact  Fact @relation(fields: [factId], references: [id], onDelete: Cascade)
+  factId BigInt
+  author  User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+}
