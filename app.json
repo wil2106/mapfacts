@@ -52,7 +52,8 @@
       },
       "eas": {
         "projectId": "ec8ef3cc-c14e-494d-a9c0-73319ddaeebc"
-      }
+      },
+      "googlePlacesApiKey": "AIzaSyBA9ITaUEFWML5Of4qCkBvEPYtGIxIx91M"
     }
   }
 }

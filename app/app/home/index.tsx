@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Linking,
   SafeAreaView,
   SafeAreaViewBase,
@@ -14,10 +15,16 @@ import MapView, { Details, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { CUSTOM_MAP_STYLE } from "../../../helpers/constants";
 import { Badge, Icon, useTheme } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from 'expo-linear-gradient';
+import { Place } from "../../../helpers/types";
 
 export default function Index() {
   const { theme } = useTheme();
-  const safeAreaInsets = useSafeAreaInsets();
+  const [state, setState] = useState<{
+    recenterLoading: boolean;
+  }>({
+    recenterLoading: false,
+  });
 
   const mapRef = useRef<MapView>(null);
   const pushNotificationPermRequested = usePersistStore(
@@ -40,12 +47,14 @@ export default function Index() {
   };
 
   const getPositionAndRecenter = async (openSettings: boolean) => {
+    setState((prev) => ({ ...prev, recenterLoading: true }));
     let { status } = await Location.getForegroundPermissionsAsync();
     if (status !== "granted") {
       setLocationEnabled(false);
       if (openSettings) {
         Linking.openSettings();
       }
+      setState((prev) => ({ ...prev, recenterLoading: false }));
       return;
     }
     setLocationEnabled(true);
@@ -62,6 +71,7 @@ export default function Index() {
     if (mapRef.current) {
       mapRef.current.animateToRegion(currentRegion, 1000);
     }
+    setState((prev) => ({ ...prev, recenterLoading: false }));
   };
 
   return (
@@ -69,7 +79,6 @@ export default function Index() {
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
-        customMapStyle={CUSTOM_MAP_STYLE}
         provider={PROVIDER_GOOGLE}
         initialRegion={region}
         onRegionChangeComplete={onRegionChange}
@@ -91,21 +100,32 @@ export default function Index() {
               alignSelf: "center",
             }}
           >
-            <Icon
-              raised
-              name="location-arrow"
-              type="font-awesome"
-              onPress={() => getPositionAndRecenter(true)}
-              size={20}
-            />
-            {!locationEnabled && (
-              <Badge
-                status="error"
-                value={
-                  <Icon name="alert" type="ionicon" color="white" size={12} />
-                }
-                containerStyle={{ position: "absolute", top: 0, right: 0 }}
-              />
+            {state.recenterLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Icon
+                  raised
+                  name="location-arrow"
+                  type="font-awesome"
+                  onPress={() => getPositionAndRecenter(true)}
+                  size={20}
+                />
+                {!locationEnabled && (
+                  <Badge
+                    status="error"
+                    value={
+                      <Icon
+                        name="alert"
+                        type="ionicon"
+                        color="white"
+                        size={12}
+                      />
+                    }
+                    containerStyle={{ position: "absolute", top: 0, right: 0 }}
+                  />
+                )}
+              </>
             )}
           </View>
           <Icon
