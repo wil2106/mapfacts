@@ -88,10 +88,8 @@ export interface Database {
       }
       User: {
         Row: {
-          banReason: string | null
           createdAt: string
           id: string
-          isBanned: boolean
           lastLoginAt: string
           lastRadarNotificationAt: string | null
           pushToken: string | null
@@ -100,10 +98,8 @@ export interface Database {
           radarMinUpvotes: number
         }
         Insert: {
-          banReason?: string | null
           createdAt?: string
           id: string
-          isBanned?: boolean
           lastLoginAt?: string
           lastRadarNotificationAt?: string | null
           pushToken?: string | null
@@ -112,10 +108,8 @@ export interface Database {
           radarMinUpvotes?: number
         }
         Update: {
-          banReason?: string | null
           createdAt?: string
           id?: string
-          isBanned?: boolean
           lastLoginAt?: string
           lastRadarNotificationAt?: string | null
           pushToken?: string | null

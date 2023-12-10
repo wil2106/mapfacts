@@ -11,19 +11,59 @@ import { useFlashStore, usePersistStore } from "../../../helpers/zustand";
 import { createRef, useEffect, useRef, useState } from "react";
 import { router } from "expo-router";
 import * as Location from "expo-location";
-import MapView, { Details, PROVIDER_GOOGLE, Region } from "react-native-maps";
+import MapView, {
+  Details,
+  Heatmap,
+  Marker,
+  PROVIDER_GOOGLE,
+  Region,
+} from "react-native-maps";
 import { CUSTOM_MAP_STYLE } from "../../../helpers/constants";
 import { Badge, Icon, useTheme } from "@rneui/themed";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from 'expo-linear-gradient';
-import { Place } from "../../../helpers/types";
+import { LinearGradient } from "expo-linear-gradient";
+import i18n from "../../../helpers/i18n";
+import { FactType } from "../../../types";
+import Fact from "../../../components/FactText";
 
 export default function Index() {
   const { theme } = useTheme();
   const [state, setState] = useState<{
     recenterLoading: boolean;
+    factsLoading: boolean;
+    facts: FactType[];
   }>({
     recenterLoading: false,
+    factsLoading: false,
+    facts: [
+      {
+        angled: 0,
+        createdat: "2023-12-05T16:28:41.384",
+        id: 1,
+        latitude: 40.807416,
+        longitude: -73.946823,
+        radiusm: 1000,
+        text: "Quartier sympa",
+      },
+      {
+        angled: 0,
+        createdat: "2023-12-05T16:28:41.384",
+        id: 2,
+        latitude: 40.807475,
+        longitude: -73.94581,
+        radiusm: 500,
+        text: "Ça craint ici",
+      },
+      {
+        angled: 0,
+        createdat: "2023-12-05T16:28:41.384",
+        id: 3,
+        latitude: 40.80629,
+        longitude: -73.945826,
+        radiusm: 300,
+        text: "Les gens sont aigris",
+      },
+    ],
   });
 
   const mapRef = useRef<MapView>(null);
@@ -44,13 +84,29 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    if (teleport !== null && mapRef.current){
+    if (teleport !== null && mapRef.current) {
       mapRef.current.animateToRegion(teleport, 1000);
     }
   }, [teleport]);
 
-  const onRegionChange = (newRegion: Region, details: Details) => {
+  const onRegionChange = async (newRegion: Region, details: Details) => {
     setRegion(newRegion);
+    try {
+      setState((prev) => ({ ...prev, factsLoading: true }));
+      // const { data, error } = await supabase.rpc("facts_in_view", {
+      //   min_lat: newRegion.latitude - newRegion.latitudeDelta / 2,
+      //   min_long: newRegion.longitude - newRegion.longitudeDelta / 2,
+      //   max_lat: newRegion.latitude + newRegion.latitudeDelta / 2,
+      //   max_long: newRegion.longitude + newRegion.longitudeDelta / 2,
+      // });
+      // console.log(data);
+      // setState((prev) => ({ ...prev, facts: data }));
+    } catch (err) {
+      console.error(err);
+      alert(i18n.t("default_error_message"));
+    } finally {
+      setState((prev) => ({ ...prev, factsLoading: false }));
+    }
   };
 
   const getPositionAndRecenter = async (openSettings: boolean) => {
@@ -90,7 +146,46 @@ export default function Index() {
         initialRegion={region}
         onRegionChangeComplete={onRegionChange}
         minZoomLevel={12}
-      ></MapView>
+        customMapStyle={CUSTOM_MAP_STYLE}
+      >
+        {state.facts.map((fact) => (
+          <Marker
+            coordinate={{ latitude: fact.latitude, longitude: fact.longitude }}
+          >
+            <Text
+              style={{
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                color: "white",
+                fontFamily: "Fredoka_Bold",
+                fontSize: 30,
+                shadowColor: theme.colors.black,
+                shadowOffset: {
+                  width: 2,
+                  height: 4,
+                },
+                shadowOpacity: 1,
+                shadowRadius: 0,
+              }}
+            >
+              {fact.text}
+            </Text>
+          </Marker>
+        ))}
+        <Heatmap
+          opacity={0.6}
+          radius={60}
+          gradient={{
+            colors: ["transparent", "#0FACFD", "#FFFC01", "#F33C58"],
+            startPoints: [0.0, 0.2, 0.6, 1.0],
+            colorMapSize: 256,
+          }}
+          points={state.facts.map((fact) => ({
+            latitude: fact.latitude,
+            longitude: fact.longitude,
+          }))}
+        />
+      </MapView>
       <SafeAreaView
         style={{
           position: "absolute",
@@ -165,6 +260,13 @@ export default function Index() {
             onPress={() => router.push("/app/home/account")}
             size={20}
           />
+          {state.factsLoading && (
+            <ActivityIndicator
+              color={theme.colors.black}
+              size="large"
+              style={{ position: "absolute", top: 5, alignSelf: "center" }}
+            />
+          )}
           <View
             style={{
               position: "absolute",

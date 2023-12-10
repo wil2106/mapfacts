@@ -13,8 +13,8 @@ import PlaceItem from "../../../components/PlaceItem";
 import axios from "axios";
 import Constants from "expo-constants";
 import i18n from "../../../helpers/i18n";
-import { Place } from "../../../helpers/types";
 import { useFlashStore } from "../../../helpers/zustand";
+import { PlaceType } from "../../../types";
 
 const places = [{ title: "Annecy" }, { title: "Paris" }, { title: "Lyon" }];
 
@@ -25,7 +25,7 @@ export default function Search() {
   const [state, setState] = useState<{
     search: string;
     loading: boolean;
-    candidates: Place[];
+    candidates: PlaceType[];
   }>({
     search: "",
     loading: false,
@@ -67,7 +67,7 @@ export default function Search() {
           throw new Error("No candidates");
         }
 
-        let newCandidates: Place[] = [];
+        let newCandidates: PlaceType[] = [];
         for (let i = 0; i < res.data.candidates.length; i++) {
           const candidate = res.data.candidates[i];
           if (
@@ -95,7 +95,7 @@ export default function Search() {
     }, 500);
   };
 
-  const onSelect = (place: Place) => {
+  const onSelect = (place: PlaceType) => {
     router.back();
     setTimeout(() => {
       setTeleport({
