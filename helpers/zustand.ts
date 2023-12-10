@@ -12,6 +12,8 @@ interface FlashState {
   setUser: (value: UserType | null) => void;
   locationEnabled: boolean;
   setLocationEnabled: (value: boolean) => void;
+  teleport: Region | null;
+  setTeleport: (value: Region) => void;
 }
 
 interface PersistState {
@@ -29,6 +31,8 @@ export const useFlashStore = create<FlashState>((set) => ({
   locationEnabled: false,
   setLocationEnabled: (value) =>
     set((state) => ({ locationEnabled: value })),
+  teleport: null,
+  setTeleport: (value) => set((state) => ({ teleport: value })),
 }));
 
 export const usePersistStore = create<PersistState>()(

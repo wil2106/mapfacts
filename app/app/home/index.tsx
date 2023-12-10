@@ -33,7 +33,9 @@ export default function Index() {
   const region = usePersistStore((state) => state.region);
   const locationEnabled = useFlashStore((state) => state.locationEnabled);
   const setLocationEnabled = useFlashStore((state) => state.setLocationEnabled);
+  const teleport = useFlashStore((state) => state.teleport);
   const setRegion = usePersistStore((state) => state.setRegion);
+
   useEffect(() => {
     if (!pushNotificationPermRequested) {
       return router.replace("/app/home/push-notifications-perm");
@@ -41,8 +43,13 @@ export default function Index() {
     getPositionAndRecenter(false);
   }, []);
 
+  useEffect(() => {
+    if (teleport !== null && mapRef.current){
+      mapRef.current.animateToRegion(teleport, 1000);
+    }
+  }, [teleport]);
+
   const onRegionChange = (newRegion: Region, details: Details) => {
-    console.log(newRegion);
     setRegion(newRegion);
   };
 
