@@ -13,6 +13,7 @@ export interface Database {
         Row: {
           angleD: number
           authorId: string
+          color: string
           createdAt: string
           id: number
           location: unknown
@@ -22,6 +23,7 @@ export interface Database {
         Insert: {
           angleD: number
           authorId: string
+          color?: string
           createdAt?: string
           id?: number
           location: unknown
@@ -31,6 +33,7 @@ export interface Database {
         Update: {
           angleD?: number
           authorId?: string
+          color?: string
           createdAt?: string
           id?: number
           location?: unknown
@@ -125,21 +128,21 @@ export interface Database {
           createdAt: string
           factId: number
           id: number
-          isUp: boolean
+          value: number
         }
         Insert: {
           authorId: string
           createdAt?: string
           factId: number
           id?: number
-          isUp: boolean
+          value: number
         }
         Update: {
           authorId?: string
           createdAt?: string
           factId?: number
           id?: number
-          isUp?: boolean
+          value?: number
         }
         Relationships: [
           {
@@ -163,7 +166,24 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      facts_in_view: {
+        Args: {
+          min_lat: number
+          min_long: number
+          max_lat: number
+          max_long: number
+        }
+        Returns: {
+          id: number
+          createdat: string
+          text: string
+          radiusm: number
+          angled: number
+          latitude: number
+          longitude: number
+          score: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

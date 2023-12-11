@@ -24,17 +24,21 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import i18n from "../../../helpers/i18n";
 import { FactType } from "../../../types";
-import Fact from "../../../components/FactText";
+import randomColor from "randomcolor";
+import { getFontSize, getMinScore } from "../../../helpers/utils";
+import _ from "lodash";
 
 export default function Index() {
   const { theme } = useTheme();
   const [state, setState] = useState<{
     recenterLoading: boolean;
     factsLoading: boolean;
+    minScore: number;
     facts: FactType[];
   }>({
     recenterLoading: false,
     factsLoading: false,
+    minScore: 1000,
     facts: [
       {
         angled: 0,
@@ -44,6 +48,8 @@ export default function Index() {
         longitude: -73.946823,
         radiusm: 1000,
         text: "Quartier sympa",
+        score: 0,
+        color: "#c1deff",
       },
       {
         angled: 0,
@@ -53,6 +59,8 @@ export default function Index() {
         longitude: -73.94581,
         radiusm: 500,
         text: "Ça craint ici",
+        score: 10,
+        color: "#ed6fb8",
       },
       {
         angled: 0,
@@ -62,6 +70,8 @@ export default function Index() {
         longitude: -73.945826,
         radiusm: 300,
         text: "Les gens sont aigris",
+        score: 100,
+        color: "#72ff8a",
       },
     ],
   });
@@ -89,7 +99,10 @@ export default function Index() {
     }
   }, [teleport]);
 
-  const onRegionChange = async (newRegion: Region, details: Details) => {
+  const onRegionChangeComplete = async (
+    newRegion: Region,
+    details: Details
+  ) => {
     setRegion(newRegion);
     try {
       setState((prev) => ({ ...prev, factsLoading: true }));
@@ -108,6 +121,17 @@ export default function Index() {
       setState((prev) => ({ ...prev, factsLoading: false }));
     }
   };
+
+  const onRegionChange = _.debounce(
+    async (newRegion: Region, details: Details) => {
+      const coords = await mapRef?.current?.getCamera();
+      if (!coords?.zoom) {
+        return;
+      }
+      setState((prev) => ({ ...prev, minScore: getMinScore(coords.zoom as number) }));
+    },
+    500
+  );
 
   const getPositionAndRecenter = async (openSettings: boolean) => {
     setState((prev) => ({ ...prev, recenterLoading: true }));
@@ -144,25 +168,28 @@ export default function Index() {
         style={{ flex: 1 }}
         provider={PROVIDER_GOOGLE}
         initialRegion={region}
-        onRegionChangeComplete={onRegionChange}
+        onRegionChangeComplete={onRegionChangeComplete}
+        onRegionChange={onRegionChange}
         minZoomLevel={12}
         customMapStyle={CUSTOM_MAP_STYLE}
       >
         {state.facts.map((fact) => (
           <Marker
+            key={fact.id}
             coordinate={{ latitude: fact.latitude, longitude: fact.longitude }}
+            rotation={fact.angled}
+            opacity={fact.score >= state.minScore ? 1 : 0}
           >
             <Text
               style={{
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                color: "white",
-                fontFamily: "Fredoka_Bold",
-                fontSize: 30,
+                textAlign: "center",
+                color: fact.color,
+                fontFamily: "Fredoka_SemiBold",
+                fontSize: getFontSize(fact.score),
                 shadowColor: theme.colors.black,
                 shadowOffset: {
-                  width: 2,
-                  height: 4,
+                  width: 1,
+                  height: 2,
                 },
                 shadowOpacity: 1,
                 shadowRadius: 0,
@@ -173,7 +200,7 @@ export default function Index() {
           </Marker>
         ))}
         <Heatmap
-          opacity={0.6}
+          opacity={0.8}
           radius={60}
           gradient={{
             colors: ["transparent", "#0FACFD", "#FFFC01", "#F33C58"],
@@ -262,7 +289,7 @@ export default function Index() {
           />
           {state.factsLoading && (
             <ActivityIndicator
-              color={theme.colors.black}
+              color={theme.colors.white}
               size="large"
               style={{ position: "absolute", top: 5, alignSelf: "center" }}
             />
@@ -294,6 +321,9 @@ export default function Index() {
               containerStyle={{
                 marginHorizontal: 0,
                 marginVertical: 0,
+              }}
+              iconStyle={{
+                color: theme.colors.primary
               }}
               name="radar"
               type="material-community"

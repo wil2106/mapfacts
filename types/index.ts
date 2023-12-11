@@ -17,4 +17,6 @@ export interface FactType {
   longitude: number;
   radiusm: number;
   text: string;
+  score: number;
+  color: string;
 }

@@ -31,6 +31,7 @@ model Fact {
   angleD Float
   author  User @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId String
+  color String @default("#ffffff")
   
   votes Vote[]
   reports Report[]
@@ -39,7 +40,7 @@ model Fact {
 model Vote {
   id BigInt @id @default(autoincrement())
   createdAt DateTime @default(now())
-  isUp Boolean
+  value Int
   fact  Fact @relation(fields: [factId], references: [id], onDelete: Cascade)
   factId BigInt
   author  User @relation(fields: [authorId], references: [id], onDelete: Cascade)
