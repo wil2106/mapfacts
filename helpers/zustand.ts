@@ -1,9 +1,18 @@
 import { User } from "@supabase/supabase-js";
 import { create } from "zustand";
-import { UserType } from "../types";
+import { FactType, UserType } from "../types";
 import { devtools, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Region } from "react-native-maps";
+
+type UserFactsStatus = "idle" | "init-loading" | "next-loading" | "end";
+type UserFactsSort = "date" | "popularity" ;
+
+interface UserFacts {
+  list: FactType[];
+  status: UserFactsStatus;
+  sort: UserFactsSort;
+}
 
 interface FlashState {
   sessionUser?: User | null;
@@ -14,6 +23,10 @@ interface FlashState {
   setLocationEnabled: (value: boolean) => void;
   teleport: Region | null;
   setTeleport: (value: Region) => void;
+  userFacts: UserFacts,
+  setUserFactsList: (value: FactType[]) => void;
+  setUserFactsStatus: (value: UserFactsStatus) => void;
+  setUserFactsSort: (value: UserFactsSort) => void;
 }
 
 interface PersistState {
@@ -33,6 +46,14 @@ export const useFlashStore = create<FlashState>((set) => ({
     set((state) => ({ locationEnabled: value })),
   teleport: null,
   setTeleport: (value) => set((state) => ({ teleport: value })),
+  userFacts: {
+    list: [],
+    status: "idle",
+    sort: "date"
+  },
+  setUserFactsList: (value) => set((state) => ({ userFacts: {...state.userFacts, list: value} })),
+  setUserFactsStatus: (value) => set((state) => ({ userFacts: {...state.userFacts, status: value} })),
+  setUserFactsSort: (value) => set((state) => ({ userFacts: {...state.userFacts, sort: value} })),
 }));
 
 export const usePersistStore = create<PersistState>()(

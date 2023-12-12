@@ -25,11 +25,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import i18n from "../../../helpers/i18n";
 import { FactType } from "../../../types";
 import randomColor from "randomcolor";
-import { getFontSize, getMinScore } from "../../../helpers/utils";
+import { getFontSize, getMinScore, getNewKnownArea, getUnknownArea } from "../../../helpers/utils";
 import _ from "lodash";
+import * as turf from "@turf/turf";
+import { StatusBar } from "expo-status-bar";
 
 export default function Index() {
   const { theme } = useTheme();
+  const knownAreaRef = useRef<turf.helpers.Feature<turf.helpers.Polygon | turf.helpers.MultiPolygon, turf.helpers.Properties> | null>(null);
   const [state, setState] = useState<{
     recenterLoading: boolean;
     factsLoading: boolean;
@@ -38,7 +41,7 @@ export default function Index() {
   }>({
     recenterLoading: false,
     factsLoading: false,
-    minScore: 1000,
+    minScore: 100,
     facts: [
       {
         angled: 0,
@@ -106,14 +109,30 @@ export default function Index() {
     setRegion(newRegion);
     try {
       setState((prev) => ({ ...prev, factsLoading: true }));
+      const minLatitude = newRegion.latitude - newRegion.latitudeDelta / 2;
+      const minLongitude = newRegion.longitude - newRegion.longitudeDelta / 2;
+      const maxLatitude = newRegion.latitude + newRegion.latitudeDelta / 2;
+      const maxLongitude = newRegion.longitude + newRegion.longitudeDelta / 2;
+
+      const cameraArea = turf.polygon([
+        [
+          [minLongitude, minLatitude],
+          [minLongitude, maxLatitude],
+          [maxLongitude, minLatitude],
+          [maxLongitude, maxLatitude],
+          [minLongitude, minLatitude],
+        ],
+      ]);
+      const unknownArea = getUnknownArea(cameraArea, knownAreaRef.current)
       // const { data, error } = await supabase.rpc("facts_in_view", {
-      //   min_lat: newRegion.latitude - newRegion.latitudeDelta / 2,
-      //   min_long: newRegion.longitude - newRegion.longitudeDelta / 2,
-      //   max_lat: newRegion.latitude + newRegion.latitudeDelta / 2,
-      //   max_long: newRegion.longitude + newRegion.longitudeDelta / 2,
+      //   min_lat: minLatitude,
+      //   min_long: minLongitude,
+      //   max_lat: maxLatitude,
+      //   max_long: maxLongitude,
       // });
       // console.log(data);
       // setState((prev) => ({ ...prev, facts: data }));
+      knownAreaRef.current = getNewKnownArea(cameraArea, knownAreaRef.current);
     } catch (err) {
       console.error(err);
       alert(i18n.t("default_error_message"));
@@ -128,7 +147,10 @@ export default function Index() {
       if (!coords?.zoom) {
         return;
       }
-      setState((prev) => ({ ...prev, minScore: getMinScore(coords.zoom as number) }));
+      setState((prev) => ({
+        ...prev,
+        minScore: getMinScore(coords.zoom as number),
+      }));
     },
     500
   );
@@ -163,6 +185,7 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1, position: "relative" }}>
+      <StatusBar style="light" />
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
@@ -323,7 +346,7 @@ export default function Index() {
                 marginVertical: 0,
               }}
               iconStyle={{
-                color: theme.colors.primary
+                color: theme.colors.primary,
               }}
               name="radar"
               type="material-community"

@@ -4,8 +4,8 @@ import { useFlashStore, usePersistStore } from "../../../helpers/zustand";
 import { ActivityIndicator, AppState, View } from "react-native";
 import { useEffect, useRef } from "react";
 import { supabase } from "../../../supabase/supabase";
-import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 import * as Location from "expo-location";
 
 export default function AppLayout() {
@@ -16,21 +16,24 @@ export default function AppLayout() {
   const appState = useRef(AppState.currentState);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", async (nextAppState) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === "active"
-      ) {
-        let { status } = await Location.getForegroundPermissionsAsync();
-        if (status === "granted") {
-          setLocationEnabled(true);
-        } else {
-          setLocationEnabled(false);
+    const subscription = AppState.addEventListener(
+      "change",
+      async (nextAppState) => {
+        if (
+          appState.current.match(/inactive|background/) &&
+          nextAppState === "active"
+        ) {
+          let { status } = await Location.getForegroundPermissionsAsync();
+          if (status === "granted") {
+            setLocationEnabled(true);
+          } else {
+            setLocationEnabled(false);
+          }
         }
-      }
 
-      appState.current = nextAppState;
-    });
+        appState.current = nextAppState;
+      }
+    );
 
     return () => {
       subscription.remove();
@@ -41,20 +44,24 @@ export default function AppLayout() {
     if (sessionUser) {
       (async () => {
         let pushToken: string | undefined;
-        if (Constants?.expoConfig?.extra?.eas.projectId){
+        if (Constants?.expoConfig?.extra?.eas.projectId) {
           try {
-            pushToken = (await Notifications.getExpoPushTokenAsync({ projectId: Constants.expoConfig.extra.eas.projectId })).data;
-          } catch (err){
+            pushToken = (
+              await Notifications.getExpoPushTokenAsync({
+                projectId: Constants.expoConfig.extra.eas.projectId,
+              })
+            ).data;
+          } catch (err) {
             console.warn(err);
           }
         }
-        
+
         const { data, error } = await supabase
           .from("User")
           .upsert({
             id: sessionUser.id,
             lastLoginAt: new Date().toISOString(),
-            ...(pushToken !== undefined ? {pushToken} : {})
+            ...(pushToken !== undefined ? { pushToken } : {}),
           })
           .select()
           .single();
@@ -102,8 +109,25 @@ export default function AppLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="push-notifications-perm" options={{ title: "" }} />
       <Stack.Screen name="radar-settings" options={{ title: "" }} />
-      <Stack.Screen name="search" options={{ headerShown: false, animation: "fade" }} />
+      <Stack.Screen
+        name="search"
+        options={{ headerShown: false, animation: "fade" }}
+      />
       <Stack.Screen name="settings" options={{ title: "" }} />
+      <Stack.Screen
+        name="account"
+        options={{
+          headerRight: (props) => (
+            <Icon
+              name="settings"
+              type="material"
+              onPress={() => router.push("/app/home/settings")}
+              color={theme.colors.black}
+              size={26}
+            />
+          ),
+        }}
+      />
     </Stack>
   );
 }

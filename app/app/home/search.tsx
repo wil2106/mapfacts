@@ -15,6 +15,7 @@ import Constants from "expo-constants";
 import i18n from "../../../helpers/i18n";
 import { useFlashStore } from "../../../helpers/zustand";
 import { PlaceType } from "../../../types";
+import { StatusBar } from "expo-status-bar";
 
 const places = [{ title: "Annecy" }, { title: "Paris" }, { title: "Lyon" }];
 
@@ -109,6 +110,7 @@ export default function Search() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      <StatusBar style="dark" />
       <View style={{ flex: 1, gap: 10 }}>
         <View
           style={{
