@@ -16,12 +16,14 @@ import i18n from "../../../helpers/i18n";
 import { useFlashStore } from "../../../helpers/zustand";
 import { PlaceType } from "../../../types";
 import { StatusBar } from "expo-status-bar";
+import { BASE_LATITUDE_DELTA, BASE_LONGITUDE_DELTA } from "../../../helpers/constants";
 
 const places = [{ title: "Annecy" }, { title: "Paris" }, { title: "Lyon" }];
 
 export default function Search() {
   const { theme } = useTheme();
   const setTeleport = useFlashStore((state) => state.setTeleport);
+  const setSelectedFact = useFlashStore((state) => state.setSelectedFact);
   const timeoutRef = useRef<NodeJS.Timeout>();
   const [state, setState] = useState<{
     search: string;
@@ -98,12 +100,13 @@ export default function Search() {
 
   const onSelect = (place: PlaceType) => {
     router.back();
+    setSelectedFact(null);
     setTimeout(() => {
       setTeleport({
         latitude: place.latitude,
         longitude: place.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
+        latitudeDelta: BASE_LATITUDE_DELTA,
+        longitudeDelta: BASE_LONGITUDE_DELTA,
       });
     }, 1000);
   }
@@ -156,8 +159,7 @@ export default function Search() {
           renderItem={({ item, index }) => (
             <PlaceItem
               onPress={() => onSelect(item)}
-              title={item.name}
-              subtitle={item.formattedAddress}
+              place={item}
               first={index === 0}
               last={index === state.candidates.length - 1}
             />

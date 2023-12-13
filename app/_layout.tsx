@@ -4,10 +4,17 @@ import { useEffect } from "react";
 import useAuthListener from "../hooks/useAuthStateListener";
 import { ThemeProvider, useTheme } from "@rneui/themed";
 import theme from "../helpers/theme";
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from "expo-status-bar";
 import { Linking } from "react-native";
 import useDeeplinkListener from "../hooks/useDeeplinkListener";
-import * as Notifications from 'expo-notifications';
+import * as Notifications from "expo-notifications";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { setDefaultOptions } from "date-fns";
+import { enUS, fr } from "date-fns/locale";
+import i18n from "../helpers/i18n";
+import Toast from "react-native-toast-message";
+
+setDefaultOptions({ locale: i18n.locale === "fr" ? fr : enUS });
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -52,9 +59,14 @@ function RootLayoutNav() {
   useDeeplinkListener();
 
   return (
-    <ThemeProvider theme={theme}>
-      <StatusBar style="dark" />
-      <Slot />
-    </ThemeProvider>
+    <>
+      <ThemeProvider theme={theme}>
+        <BottomSheetModalProvider>
+          <StatusBar style="dark" />
+          <Slot />
+        </BottomSheetModalProvider>
+      </ThemeProvider>
+      <Toast />
+    </>
   );
 }

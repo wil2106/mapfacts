@@ -48,7 +48,7 @@ export default function PushNotificationsPerm() {
 
   const onSkip = () => {
     setPushNotificationPermRequested(true);
-    router.replace("/app/home");
+    router.replace("/app/home/map");
   };
 
   const requestPerm = async (openSettings: boolean) => {
@@ -85,7 +85,7 @@ export default function PushNotificationsPerm() {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      router.replace("/app/home");
+      router.replace("/app/home/map");
     } catch (err) {
       console.error(err);
       alert(i18n.t("default_error_message"));

@@ -28,20 +28,20 @@ export default function Account() {
   const setUserFactsList = useFlashStore((state) => state.setUserFactsList);
   const setUserFactsStatus = useFlashStore((state) => state.setUserFactsStatus);
   const setUserFactsSort = useFlashStore((state) => state.setUserFactsSort);
-  const setTeleport = useFlashStore((state) => state.setTeleport);
+  const setSelectedFact = useFlashStore((state) => state.setSelectedFact);
   const { theme } = useTheme();
 
   useEffect(() => {
     if (userFacts.status !== "end" && userFacts.list.length === 0) {
       fetchUserFacts(true);
     }
-    initialRenderDoneRef.current = true;
   }, []);
 
   useEffect(() => {
     if (initialRenderDoneRef.current) {
       fetchUserFacts(true);
     }
+    initialRenderDoneRef.current = true;
   }, [userFacts.sort]);
 
   const fetchUserFacts = async (init: boolean) => {
@@ -86,7 +86,7 @@ export default function Account() {
       }
     } catch (err) {
       console.error(err);
-      alert(i18n.t("default_error_message"));
+      alert(i18n.t("account.default_error_message"));
       setUserFactsStatus("idle");
     }
   };
@@ -94,12 +94,7 @@ export default function Account() {
   const onSelect = (fact: FactType) => {
     router.back();
     setTimeout(() => {
-      setTeleport({
-        latitude: fact.latitude,
-        longitude: fact.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
+      setSelectedFact(fact);
     }, 1000);
   }
 
@@ -136,22 +131,22 @@ export default function Account() {
           }}
         >
           <Text style={{ fontFamily: "Fredoka_SemiBold", fontSize: 18 }}>
-            Mes posts
+            {i18n.t("account.my_facts")}
           </Text>
           <MenuView
-            themeVariant="light"
+            themeVariant="dark"
             onPressAction={({ nativeEvent }) => {
               setUserFactsSort(nativeEvent.event as any);
             }}
             actions={[
               {
                 id: "date",
-                title: "Sort by date",
+                title: i18n.t("account.sort_by_date"),
                 titleColor: theme.colors.black,
               },
               {
                 id: "popularity",
-                title: "Sort by popularity",
+                title: i18n.t("account.sort_by_popularity"),
                 titleColor: theme.colors.black,
               },
             ]}
@@ -160,7 +155,7 @@ export default function Account() {
               style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
             >
               <Text style={{ color: theme.colors.grey0 }}>
-                {userFacts.sort === "date" ? "Date" : "Popularity"}
+                {userFacts.sort === "date" ? i18n.t("account.date") : i18n.t("account.popularity")}
               </Text>
               <Icon
                 name="sort-desc"
@@ -187,8 +182,7 @@ export default function Account() {
           renderItem={({ item, index }) => (
             <FactItem
               onPress={() => onSelect(item)}
-              text={item.text}
-              score={item.score}
+              fact={item}
               first={index === 0}
               last={index === userFacts.list.length - 1}
             />
@@ -197,14 +191,14 @@ export default function Account() {
             <View style={{marginVertical: 10}}>
               {userFacts.status === "idle" && (
                 <Button title="Solid" onPress={() => fetchUserFacts(false)} type="clear" color={theme.colors.grey0}>
-                  See more
+                  {i18n.t("account.see_more")}
                 </Button>
               )}
               {userFacts.status === "next-loading" && (
                 <ActivityIndicator size="small" style={{ marginTop: 10 }} />
               )}
               {userFacts.status === "end" && (
-                <Text style={{alignSelf: "center", color: theme.colors.grey1}}>No more results</Text>
+                <Text style={{alignSelf: "center", color: theme.colors.grey1}}>{i18n.t("account.no_more_results")}</Text>
               )}
             </View>
           }

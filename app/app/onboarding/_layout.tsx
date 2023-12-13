@@ -9,7 +9,7 @@ export default function OnboardingLayout() {
   const sessionUser = useFlashStore((state) => state.sessionUser);
   const { theme } = useTheme();
   if (sessionUser) {
-    return <Redirect href="/app/home" />;
+    return <Redirect href="/app/home/map" />;
   }
 
   const onOpenSupport = () => {

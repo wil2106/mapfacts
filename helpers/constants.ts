@@ -3,6 +3,9 @@ export const TERMS_OF_SERVICE_URL = "https://wslabs.fr/";
 export const SUPPORT_URL = "https://go.crisp.chat/chat/embed/?website_id=bdc33418-7b6a-41e8-8dd5-dc2bb0e76f91";
 export const WEBSITE_URL = "https://mapfacts.vercel.app/";
 
+export const BASE_LATITUDE_DELTA = 0.0922;
+export const BASE_LONGITUDE_DELTA = 0.0421;
+
 export const CUSTOM_MAP_STYLE = [
   {
     "elementType": "geometry",

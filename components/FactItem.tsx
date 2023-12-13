@@ -1,19 +1,16 @@
 import { Avatar, Button, ListItem, Text, useTheme } from "@rneui/themed";
+import { FactType } from "../types";
 
 export default function FactItem({
   first,
   last,
-  text,
-  score,
-  isHot,
+  fact,
   onPress,
   onDelete,
 }: {
   first?: boolean;
   last?: boolean;
-  text: string;
-  score: number;
-  isHot?: boolean;
+  fact: FactType;
   onPress?: () => void;
   onDelete?: () => void;
 }) {
@@ -22,19 +19,27 @@ export default function FactItem({
     <ListItem bottomDivider={!last} onPress={onPress} first={first} last={last}>
       <ListItem.Content>
         <Text style={{ fontFamily: "Fredoka_Medium" }} numberOfLines={1}>
-          {text}
+          {fact.text}
         </Text>
       </ListItem.Content>
       <Text
         style={{
-          fontFamily: "Fredoka_Regular",
-          color: score >= 0 ? theme.colors.primary : theme.colors.tertiary,
+          fontFamily: "Fredoka_Medium",
+          color: fact.score >= 0 ? theme.colors.primary : theme.colors.tertiary,
         }}
       >
-        {score > 0 ? "+" : ""}
-        {score}
+        {fact.score > 0 ? "+" : ""}
+        {fact.score}
       </Text>
-      {isHot && <Text>🔥</Text>}
+      <Text
+        style={{
+          fontFamily: "Fredoka_Regular",
+          color: theme.colors.grey0,
+        }}
+      >
+        {`(${fact.votecount})`}
+      </Text>
+      {/* {fact.isHot && <Text>🔥</Text>} */}
       <ListItem.Chevron />
     </ListItem>
   );

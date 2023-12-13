@@ -106,7 +106,6 @@ export default function AppLayout() {
           ) : undefined,
       }}
     >
-      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="push-notifications-perm" options={{ title: "" }} />
       <Stack.Screen name="radar-settings" options={{ title: "" }} />
       <Stack.Screen

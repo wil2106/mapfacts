@@ -4,6 +4,7 @@ import { FactType, UserType } from "../types";
 import { devtools, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Region } from "react-native-maps";
+import { BASE_LATITUDE_DELTA, BASE_LONGITUDE_DELTA } from "./constants";
 
 type UserFactsStatus = "idle" | "init-loading" | "next-loading" | "end";
 type UserFactsSort = "date" | "popularity" ;
@@ -23,6 +24,8 @@ interface FlashState {
   setLocationEnabled: (value: boolean) => void;
   teleport: Region | null;
   setTeleport: (value: Region) => void;
+  selectedFact: FactType | null;
+  setSelectedFact: (value: FactType | null) => void;
   userFacts: UserFacts,
   setUserFactsList: (value: FactType[]) => void;
   setUserFactsStatus: (value: UserFactsStatus) => void;
@@ -46,6 +49,8 @@ export const useFlashStore = create<FlashState>((set) => ({
     set((state) => ({ locationEnabled: value })),
   teleport: null,
   setTeleport: (value) => set((state) => ({ teleport: value })),
+  selectedFact: null,
+  setSelectedFact: (value) => set((state) => ({ selectedFact: value })),
   userFacts: {
     list: [],
     status: "idle",
@@ -66,8 +71,8 @@ export const usePersistStore = create<PersistState>()(
         region: {
           latitude: 37.78825,
           longitude: -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+          latitudeDelta: BASE_LATITUDE_DELTA,
+          longitudeDelta: BASE_LONGITUDE_DELTA,
         },
         setRegion: (value) => set((state) => ({ region: value })),
       }),

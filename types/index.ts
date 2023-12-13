@@ -19,4 +19,7 @@ export interface FactType {
   text: string;
   score: number;
   color: string;
+  authorid: string;
+  votecount: number;
+  uservote: number | null;
 }

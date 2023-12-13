@@ -1,26 +1,23 @@
 import { Avatar, ListItem, Text } from "@rneui/themed";
+import { PlaceType } from "../types";
 
 export default function PlaceItem({
   first,
   last,
-  title,
-  subtitle,
-  photoUrl,
+  place,
   onPress,
 }: {
   first?: boolean;
   last?: boolean;
-  title: string;
-  subtitle: string;
-  photoUrl?: string;
+  place: PlaceType;
   onPress?: () => void;
 }) {
   return (
     <ListItem bottomDivider={!last} onPress={onPress} first={first} last={last}>
-      {photoUrl !== undefined && <Avatar rounded source={{ uri: photoUrl }} />}
+      {/* {place.photoUrl !== undefined && <Avatar rounded source={{ uri: photoUrl }} />} */}
       <ListItem.Content>
-        <Text style={{fontFamily: "Fredoka_Medium"}}>{title}</Text>
-        <Text style={{fontFamily: "Fredoka_Regular", fontSize: 12}}>{subtitle}</Text>
+        <Text style={{fontFamily: "Fredoka_Medium"}}>{place.name}</Text>
+        <Text style={{fontFamily: "Fredoka_Regular", fontSize: 12}}>{place.formattedAddress}</Text>
       </ListItem.Content>
       <ListItem.Chevron />
     </ListItem>
