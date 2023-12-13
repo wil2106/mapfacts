@@ -28,7 +28,7 @@ import {
   BASE_LONGITUDE_DELTA,
   CUSTOM_MAP_STYLE,
 } from "../../../helpers/constants";
-import { Badge, Icon, useTheme } from "@rneui/themed";
+import { Badge, Button, Icon, useTheme } from "@rneui/themed";
 import i18n from "../../../helpers/i18n";
 import { FactType } from "../../../types";
 import {
@@ -44,11 +44,14 @@ import { StatusBar } from "expo-status-bar";
 import { useLocalSearchParams } from "expo-router";
 import { HandledError } from "../../../helpers/error";
 import Fact from "../../../components/Fact";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CreateFactCustomBackdrop from "../../../components/CreateFactCustomBackdrop";
 
 export default function Index() {
   const { theme } = useTheme();
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["30%"], []);
+  const safeAreaInsets = useSafeAreaInsets();
+  const viewFactBottomSheetRef = useRef<BottomSheetModal>(null);
+  const createFactBottomSheetRef = useRef<BottomSheetModal>(null);
   const knownAreaRef = useRef<turf.helpers.Feature<
     turf.helpers.Polygon | turf.helpers.MultiPolygon,
     turf.helpers.Properties
@@ -58,6 +61,7 @@ export default function Index() {
     factsLoading: boolean;
     minScore: number;
     facts: FactType[];
+    createMode: boolean;
   }>({
     centerLoading: false,
     factsLoading: false,
@@ -106,6 +110,7 @@ export default function Index() {
         authorid: "2063ec2e-f13e-4b6b-a036-c82478bfceea",
       },
     ],
+    createMode: false,
   });
 
   const { factId } = useLocalSearchParams();
@@ -142,14 +147,18 @@ export default function Index() {
   }, [teleport]);
 
   useEffect(() => {
-    if (selectedFact !== null && bottomSheetRef.current && mapRef.current) {
+    if (
+      selectedFact !== null &&
+      viewFactBottomSheetRef.current &&
+      mapRef.current
+    ) {
       const newRegion = getRegion(
         selectedFact.latitude,
         selectedFact.longitude,
         selectedFact.radiusm
       );
       mapRef.current.animateToRegion(newRegion, 1000);
-      bottomSheetRef.current?.present();
+      viewFactBottomSheetRef.current?.present();
     }
   }, [selectedFact]);
 
@@ -257,7 +266,7 @@ export default function Index() {
   };
 
   const onDismissSelectedFact = () => {
-    bottomSheetRef.current?.close();
+    viewFactBottomSheetRef.current?.close();
     setSelectedFact(null);
   };
 
@@ -285,9 +294,18 @@ export default function Index() {
     const getUpdatedFact = (fact: FactType) => {
       return {
         ...fact,
-        score: fact.uservote === null ? fact.score - 1 : fact.uservote === 1 ? fact.score - 2 : fact.score + 1,
+        score:
+          fact.uservote === null
+            ? fact.score - 1
+            : fact.uservote === 1
+            ? fact.score - 2
+            : fact.score + 1,
         votecount:
-          fact.uservote === null ? fact.votecount + 1 : fact.uservote === 1 ? fact.votecount : fact.votecount - 1,
+          fact.uservote === null
+            ? fact.votecount + 1
+            : fact.uservote === 1
+            ? fact.votecount
+            : fact.votecount - 1,
         uservote: fact.uservote === null || fact.uservote === 1 ? -1 : null,
       };
     };
@@ -312,9 +330,18 @@ export default function Index() {
     const getUpdatedFact = (fact: FactType) => {
       return {
         ...fact,
-        score: fact.uservote === null ? fact.score + 1 : fact.uservote === -1 ? fact.score + 2 : fact.score - 1,
+        score:
+          fact.uservote === null
+            ? fact.score + 1
+            : fact.uservote === -1
+            ? fact.score + 2
+            : fact.score - 1,
         votecount:
-          fact.uservote === null ? fact.votecount + 1 : fact.uservote === -1 ? fact.votecount : fact.votecount - 1,
+          fact.uservote === null
+            ? fact.votecount + 1
+            : fact.uservote === -1
+            ? fact.votecount
+            : fact.votecount - 1,
         uservote: fact.uservote === null || fact.uservote === -1 ? 1 : null,
       };
     };
@@ -472,7 +499,10 @@ export default function Index() {
             type="material-community"
             reverse
             color={theme.colors.primary}
-            onPress={() => console.log("hello")}
+            onPress={() => {
+              setState((prev) => ({ ...prev, createMode: true }));
+              createFactBottomSheetRef.current?.present();
+            }}
           />
           <Icon
             containerStyle={{
@@ -488,7 +518,7 @@ export default function Index() {
             color="rgba(0, 0, 0, 0.3)"
             onPress={() => {
               onDismissSelectedFact();
-              router.push("/app/home/account")
+              router.push("/app/home/account");
             }}
             size={20}
           />
@@ -521,7 +551,7 @@ export default function Index() {
               color="rgba(0, 0, 0, 0.3)"
               onPress={() => {
                 onDismissSelectedFact();
-                router.push("/app/home/search")
+                router.push("/app/home/search");
               }}
               size={20}
             />
@@ -539,16 +569,16 @@ export default function Index() {
               color="rgba(0, 0, 0, 0.3)"
               onPress={() => {
                 onDismissSelectedFact();
-                router.push("/app/home/radar-settings")
+                router.push("/app/home/radar-settings");
               }}
               size={20}
             />
           </View>
         </View>
         <BottomSheetModal
-          ref={bottomSheetRef}
+          ref={viewFactBottomSheetRef}
           index={0}
-          snapPoints={snapPoints}
+          snapPoints={["30%"]}
           enablePanDownToClose={true}
           onDismiss={onDismissSelectedFact}
           backgroundStyle={{ backgroundColor: theme.colors.background }}
@@ -564,6 +594,69 @@ export default function Index() {
               onUpvoted={() => onFactUpvoted(selectedFact)}
             />
           )}
+        </BottomSheetModal>
+        <BottomSheetModal
+          ref={createFactBottomSheetRef}
+          index={0}
+          snapPoints={["12%"]}
+          enablePanDownToClose={false}
+          onDismiss={() => {}}
+          backgroundStyle={{ backgroundColor: theme.colors.background }}
+          enableHandlePanningGesture={false}
+          handleComponent={() => <></>}
+          backdropComponent={CreateFactCustomBackdrop}
+          //handleIndicatorStyle={{ backgroundColor: theme.colors.grey2 }}
+        >
+          <View
+            style={{
+              flex: 1,
+              paddingHorizontal: 16,
+              gap: 8,
+              marginBottom: safeAreaInsets.bottom,
+            }}
+          >
+            <View style={{ flex: 1 }} />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <Button
+                onPress={() => {
+                  setState((prev) => ({ ...prev, createMode: false }));
+                  createFactBottomSheetRef.current?.close();
+                }}
+                containerStyle={{ flex: 1 }}
+                buttonStyle={{
+                  backgroundColor: theme.colors.grey3,
+                }}
+                titleStyle={{
+                  color: theme.colors.black,
+                  fontSize: 16,
+                }}
+                //disabled={state.downvoteLoading || state.upvoteLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onPress={() => {}}
+                containerStyle={{ flex: 1 }}
+                buttonStyle={{
+                  backgroundColor: theme.colors.primary,
+                }}
+                titleStyle={{
+                  color: "white",
+                  fontSize: 16,
+                }}
+                //loading={state.upvoteLoading}
+                //disabled={state.downvoteLoading || state.upvoteLoading}
+              >
+                Post
+              </Button>
+            </View>
+          </View>
         </BottomSheetModal>
       </SafeAreaView>
     </View>
