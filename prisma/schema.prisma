@@ -12,6 +12,7 @@ model User {
   createdAt DateTime @default(now())
   lastLoginAt DateTime @default(now())
   pushToken String?
+  notificationsEnabled Boolean @default(true)
   radarEnabled Boolean @default(false)
   radarMinUpvotes Int @default(10)
   radarCooldownS Int @default(0)

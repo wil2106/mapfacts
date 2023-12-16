@@ -95,6 +95,7 @@ export interface Database {
           id: string
           lastLoginAt: string
           lastRadarNotificationAt: string | null
+          notificationsEnabled: boolean
           pushToken: string | null
           radarCooldownS: number
           radarEnabled: boolean
@@ -105,6 +106,7 @@ export interface Database {
           id: string
           lastLoginAt?: string
           lastRadarNotificationAt?: string | null
+          notificationsEnabled?: boolean
           pushToken?: string | null
           radarCooldownS?: number
           radarEnabled?: boolean
@@ -115,6 +117,7 @@ export interface Database {
           id?: string
           lastLoginAt?: string
           lastRadarNotificationAt?: string | null
+          notificationsEnabled?: boolean
           pushToken?: string | null
           radarCooldownS?: number
           radarEnabled?: boolean
@@ -166,12 +169,10 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      facts_in_view: {
+      fact: {
         Args: {
-          min_lat: number
-          min_long: number
-          max_lat: number
-          max_long: number
+          fact_id: number
+          user_id: string
         }
         Returns: {
           id: number
@@ -179,9 +180,75 @@ export interface Database {
           text: string
           radiusm: number
           angled: number
+          color: string
+          authorid: string
           latitude: number
           longitude: number
           score: number
+          votecount: number
+          uservote: number
+        }[]
+      }
+      facts_in_area: {
+        Args: {
+          user_id: string
+          polygons: string
+        }
+        Returns: {
+          id: number
+          createdat: string
+          text: string
+          radiusm: number
+          angled: number
+          color: string
+          authorid: string
+          latitude: number
+          longitude: number
+          score: number
+          votecount: number
+          uservote: number
+        }[]
+      }
+      user_facts_by_date: {
+        Args: {
+          user_id: string
+          last_date: string
+          take: number
+        }
+        Returns: {
+          id: number
+          createdat: string
+          text: string
+          radiusm: number
+          angled: number
+          color: string
+          authorid: string
+          latitude: number
+          longitude: number
+          score: number
+          votecount: number
+          uservote: number
+        }[]
+      }
+      user_facts_by_popularity: {
+        Args: {
+          user_id: string
+          last_score: number
+          take: number
+        }
+        Returns: {
+          id: number
+          createdat: string
+          text: string
+          radiusm: number
+          angled: number
+          color: string
+          authorid: string
+          latitude: number
+          longitude: number
+          score: number
+          votecount: number
+          uservote: number
         }[]
       }
     }

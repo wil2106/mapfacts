@@ -17,12 +17,10 @@ export const getUnknownArea = (cameraArea: turf.helpers.Feature<turf.helpers.Pol
     return cameraArea;
   }
   if (turf.booleanWithin(cameraArea, knownArea)){
-    console.log("within");
     return null;
   }
   const difference = turf.difference(cameraArea, knownArea);
   if(!difference){
-    console.log("no diff");
     return cameraArea;
   }
   return difference;

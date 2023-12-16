@@ -14,20 +14,19 @@ export default function Fact({
   fact,
   onClose,
   onCenter,
-  onDeleted,
-  onDownvoted,
-  onUpvoted
 }: {
   fact: FactType;
   onClose: () => void;
   onCenter: () => void;
-  onDeleted: () => void;
-  onDownvoted: () => void;
-  onUpvoted: () => void;
 }) {
   const safeAreaInsets = useSafeAreaInsets();
   const { theme } = useTheme();
   const sessionUser = useFlashStore((state) => state.sessionUser);
+  const mapFacts = useFlashStore((state) => state.mapFacts);
+  const setMapFacts = useFlashStore((state) => state.setMapFacts);
+  const userFacts = useFlashStore((state) => state.userFacts);
+  const setUserFactsList = useFlashStore((state) => state.setUserFactsList);
+  const setSelectedFact = useFlashStore((state) => state.setSelectedFact);
   const [state, setState] = useState<{
     upvoteLoading: boolean;
     downvoteLoading: boolean;
@@ -47,19 +46,23 @@ export default function Fact({
         onPress: async () => {
           try {
             const { error } = await supabase
-              .from('Fact')
+              .from("Fact")
               .delete()
-              .eq('id', fact.id);
-            if (error){
+              .eq("id", fact.id);
+            if (error) {
               throw error;
             }
-            onDeleted();
+            // remove from local state
+            setMapFacts(mapFacts.filter((fct) => fct.id !== fact.id));
+            setUserFactsList(
+              userFacts.list.filter((fct) => fct.id !== fact.id)
+            );
             onClose();
             Toast.show({
               type: "success",
               text1: i18n.t("fact.delete_toast_text"),
             });
-          } catch (err){
+          } catch (err) {
             console.error(err);
             alert(i18n.t("default_error_message"));
           }
@@ -78,21 +81,23 @@ export default function Fact({
         text: i18n.t("fact.report_dialog.delete"),
         onPress: async (reason) => {
           try {
-            if (!sessionUser?.id){
+            if (!sessionUser?.id) {
               throw new Error("No user id");
             }
             const formattedReason = reason?.trim().substring(0, 50);
-            const { error } = await supabase
-              .from("Report")
-              .insert({ reason: formattedReason ?? "", authorId: sessionUser.id, factId: fact.id });
-            if (error){
+            const { error } = await supabase.from("Report").insert({
+              reason: formattedReason ?? "",
+              authorId: sessionUser.id,
+              factId: fact.id,
+            });
+            if (error) {
               throw error;
             }
             Toast.show({
               type: "success",
               text1: i18n.t("fact.report_dialog_text"),
             });
-          } catch (err){
+          } catch (err) {
             console.error(err);
             alert(i18n.t("default_error_message"));
           }
@@ -103,67 +108,122 @@ export default function Fact({
 
   const onDownvote = async () => {
     try {
-      setState((prev) => ({...prev, downvoteLoading: true}));
-      if (!sessionUser?.id){
+      setState((prev) => ({ ...prev, downvoteLoading: true }));
+      if (!sessionUser?.id) {
         throw new Error("No user id");
       }
-      if (fact.uservote === -1){
+      if (fact.uservote === -1) {
         const { error } = await supabase
-        .from("Vote")
-        .delete()
-        .match({ authorId: sessionUser.id, factId: fact.id });
-        
-        if (error){
+          .from("Vote")
+          .delete()
+          .match({ authorId: sessionUser.id, factId: fact.id });
+
+        if (error) {
           throw error;
         }
       } else {
         const { error } = await supabase
-        .from("Vote")
-        .insert({ value: -1, authorId: sessionUser.id, factId: fact.id });
+          .from("Vote")
+          .insert({ value: -1, authorId: sessionUser.id, factId: fact.id });
 
-        if (error){
+        if (error) {
           throw error;
         }
       }
-      onDownvoted();
-    } catch (err){
+      // update in local state
+      const getUpdatedFact = (fact: FactType) => {
+        return {
+          ...fact,
+          score:
+            fact.uservote === null
+              ? fact.score - 1
+              : fact.uservote === 1
+              ? fact.score - 2
+              : fact.score + 1,
+          votecount:
+            fact.uservote === null
+              ? fact.votecount + 1
+              : fact.uservote === 1
+              ? fact.votecount
+              : fact.votecount - 1,
+          uservote: fact.uservote === null || fact.uservote === 1 ? -1 : null,
+        };
+      };
+      setMapFacts(
+        mapFacts.map((fct) => (fct.id === fact.id ? getUpdatedFact(fct) : fct))
+      );
+      setUserFactsList(
+        userFacts.list.map((fct) =>
+          fct.id === fact.id ? getUpdatedFact(fct) : fct
+        )
+      );
+      setSelectedFact(getUpdatedFact(fact));
+    } catch (err) {
       console.error(err);
       alert(i18n.t("default_error_message"));
     } finally {
-      setState((prev) => ({...prev, downvoteLoading: false}));
+      setState((prev) => ({ ...prev, downvoteLoading: false }));
     }
   };
 
   const onUpvote = async () => {
     try {
-      setState((prev) => ({...prev, upvoteLoading: true}));
-      if (!sessionUser?.id){
+      setState((prev) => ({ ...prev, upvoteLoading: true }));
+      if (!sessionUser?.id) {
         throw new Error("No user id");
       }
-      if (fact.uservote === 1){
+      if (fact.uservote === 1) {
         const { error } = await supabase
-        .from("Vote")
-        .delete()
-        .match({ authorId: sessionUser.id, factId: fact.id });
-        
-        if (error){
+          .from("Vote")
+          .delete()
+          .match({ authorId: sessionUser.id, factId: fact.id });
+
+        if (error) {
           throw error;
         }
       } else {
         const { error } = await supabase
-        .from("Vote")
-        .insert({ value: 1, authorId: sessionUser.id, factId: fact.id });
+          .from("Vote")
+          .insert({ value: 1, authorId: sessionUser.id, factId: fact.id });
 
-        if (error){
+        if (error) {
           throw error;
         }
       }
-      onUpvoted();
-    } catch (err){
+
+      // update in local state
+      const getUpdatedFact = (fact: FactType) => {
+        return {
+          ...fact,
+          score:
+            fact.uservote === null
+              ? fact.score + 1
+              : fact.uservote === -1
+              ? fact.score + 2
+              : fact.score - 1,
+          votecount:
+            fact.uservote === null
+              ? fact.votecount + 1
+              : fact.uservote === -1
+              ? fact.votecount
+              : fact.votecount - 1,
+          uservote: fact.uservote === null || fact.uservote === -1 ? 1 : null,
+        };
+      };
+      setMapFacts(
+        mapFacts.map((fct) => (fct.id === fact.id ? getUpdatedFact(fct) : fct))
+      );
+      setUserFactsList(
+        userFacts.list.map((fct) =>
+          fct.id === fact.id ? getUpdatedFact(fct) : fct
+        )
+      );
+      setSelectedFact(getUpdatedFact(fact));
+    } catch (err) {
       console.error(err);
       alert(i18n.t("default_error_message"));
     } finally {
-      setState((prev) => ({...prev, upvoteLoading: false}));
+      setState((prev) => ({ ...prev, upvoteLoading: false }));
     }
   };
 

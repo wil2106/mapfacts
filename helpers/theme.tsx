@@ -61,6 +61,19 @@ const theme = createTheme({
         paddingHorizontal: 0,
       },
     }),
+    Slider: (props, theme) => ({
+      thumbStyle: {
+        backgroundColor: "white",
+        justifyContent: "center",
+        alignItems: "center"
+      },
+      trackStyle: {
+        height: 10,
+        borderRadius: 1000
+      },
+      minimumTrackTintColor: theme.colors.grey3,
+      maximumTrackTintColor: theme.colors.grey1,
+    }),
     SearchBar: (props, theme) => ({
       containerStyle: {
         paddingHorizontal: 0,

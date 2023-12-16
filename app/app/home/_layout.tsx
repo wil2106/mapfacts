@@ -12,10 +12,14 @@ export default function AppLayout() {
   const sessionUser = useFlashStore((state) => state.sessionUser);
   const setUser = useFlashStore((state) => state.setUser);
   const setLocationEnabled = useFlashStore((state) => state.setLocationEnabled);
+  const setPushNotificationsEnabled = useFlashStore(
+    (state) => state.setPushNotificationsEnabled
+  );
   const { theme } = useTheme();
   const appState = useRef(AppState.currentState);
 
   useEffect(() => {
+    checkPerms();
     const subscription = AppState.addEventListener(
       "change",
       async (nextAppState) => {
@@ -23,12 +27,7 @@ export default function AppLayout() {
           appState.current.match(/inactive|background/) &&
           nextAppState === "active"
         ) {
-          let { status } = await Location.getForegroundPermissionsAsync();
-          if (status === "granted") {
-            setLocationEnabled(true);
-          } else {
-            setLocationEnabled(false);
-          }
+          checkPerms();
         }
 
         appState.current = nextAppState;
@@ -39,6 +38,21 @@ export default function AppLayout() {
       subscription.remove();
     };
   }, []);
+
+  const checkPerms = async () => {
+    let locationPerm = await Location.getForegroundPermissionsAsync();
+    if (locationPerm.status === "granted") {
+      setLocationEnabled(true);
+    } else {
+      setLocationEnabled(false);
+    }
+    let notificationPerm = await Notifications.getPermissionsAsync();
+    if (notificationPerm.status === "granted") {
+      setPushNotificationsEnabled(true);
+    } else {
+      setPushNotificationsEnabled(false);
+    }
+  };
 
   useEffect(() => {
     if (sessionUser) {

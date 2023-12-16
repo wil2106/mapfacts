@@ -1,6 +1,14 @@
-import { Database } from "./supabase";
-
-export type UserType = Database["public"]["Tables"]["User"]["Row"];
+export interface UserType {
+  createdAt: string
+  id: string
+  lastLoginAt: string
+  lastRadarNotificationAt: string | null
+  notificationsEnabled: boolean
+  pushToken: string | null
+  radarCooldownS: number
+  radarEnabled: boolean
+  radarMinUpvotes: number
+}
 
 export interface PlaceType {
   formattedAddress: string;

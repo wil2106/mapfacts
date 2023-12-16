@@ -21,6 +21,7 @@ import MapView, {
   Heatmap,
   Marker,
   PROVIDER_GOOGLE,
+  Polygon,
   Region,
 } from "react-native-maps";
 import {
@@ -44,14 +45,14 @@ import { StatusBar } from "expo-status-bar";
 import { useLocalSearchParams } from "expo-router";
 import { HandledError } from "../../../helpers/error";
 import Fact from "../../../components/Fact";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import CreateFactCustomBackdrop from "../../../components/CreateFactCustomBackdrop";
+import CreateFactEditor from "../../../components/CreateFactEditor";
+import CustomHeatmap from "../../../components/CustomHeatMap";
+
+const DEBUG_MODE = false;
 
 export default function Index() {
   const { theme } = useTheme();
-  const safeAreaInsets = useSafeAreaInsets();
   const viewFactBottomSheetRef = useRef<BottomSheetModal>(null);
-  const createFactBottomSheetRef = useRef<BottomSheetModal>(null);
   const knownAreaRef = useRef<turf.helpers.Feature<
     turf.helpers.Polygon | turf.helpers.MultiPolygon,
     turf.helpers.Properties
@@ -60,57 +61,22 @@ export default function Index() {
     centerLoading: boolean;
     factsLoading: boolean;
     minScore: number;
-    facts: FactType[];
     createMode: boolean;
+    debugKnownArea: turf.helpers.Feature<
+      turf.helpers.Polygon | turf.helpers.MultiPolygon,
+      turf.helpers.Properties
+    > | null;
+    debugUnknownArea: turf.helpers.Feature<
+      turf.helpers.Polygon | turf.helpers.MultiPolygon,
+      turf.helpers.Properties
+    > | null;
   }>({
     centerLoading: false,
     factsLoading: false,
     minScore: 100,
-    facts: [
-      {
-        angled: 0,
-        createdat: "2023-12-05T16:28:41.384",
-        id: 1,
-        latitude: 40.807416,
-        longitude: -73.946823,
-        radiusm: 1000,
-        text: "Quartier sympa",
-        score: 0,
-        color: "#c1deff",
-        votecount: 0,
-        uservote: null,
-        authorid: "zezez",
-      },
-      {
-        angled: 0,
-        createdat: "2023-12-05T16:28:41.384",
-        id: 2,
-        latitude: 40.807475,
-        longitude: -73.94581,
-        radiusm: 500,
-        text: "Ça craint ici",
-        score: 10,
-        color: "#ed6fb8",
-        votecount: 0,
-        uservote: 1,
-        authorid: "zezez",
-      },
-      {
-        angled: 0,
-        createdat: "2023-12-05T16:28:41.384",
-        id: 3,
-        latitude: 40.80629,
-        longitude: -73.945826,
-        radiusm: 300,
-        text: "Les gens sont aigris",
-        score: 100,
-        color: "#72ff8a",
-        votecount: 0,
-        uservote: -1,
-        authorid: "2063ec2e-f13e-4b6b-a036-c82478bfceea",
-      },
-    ],
     createMode: false,
+    debugKnownArea: null,
+    debugUnknownArea: null,
   });
 
   const { factId } = useLocalSearchParams();
@@ -125,8 +91,10 @@ export default function Index() {
   const setRegion = usePersistStore((state) => state.setRegion);
   const selectedFact = useFlashStore((state) => state.selectedFact);
   const setSelectedFact = useFlashStore((state) => state.setSelectedFact);
-  const setUserFactsList = useFlashStore((state) => state.setUserFactsList);
-  const userFacts = useFlashStore((state) => state.userFacts);
+  const mapFacts = useFlashStore((state) => state.mapFacts);
+  const createFactRadius = useFlashStore((state) => state.createFactRadius);
+  const sessionUser = useFlashStore((state) => state.sessionUser);
+  const addMapFacts = useFlashStore((state) => state.addMapFacts);
 
   useEffect(() => {
     if (!pushNotificationPermRequested) {
@@ -134,7 +102,7 @@ export default function Index() {
     }
     const parsedFactId = parseInt(factId as string);
     if (isNaN(parsedFactId)) {
-      getPositionAndCenter(false);
+      //getPositionAndCenter(false);
     } else {
       getFactAndCenter(parsedFactId);
     }
@@ -168,6 +136,9 @@ export default function Index() {
   ) => {
     setRegion(newRegion);
     try {
+      if (!sessionUser?.id) {
+        throw new Error("User id missing");
+      }
       setState((prev) => ({ ...prev, factsLoading: true }));
       const minLatitude = newRegion.latitude - newRegion.latitudeDelta / 2;
       const minLongitude = newRegion.longitude - newRegion.longitudeDelta / 2;
@@ -176,23 +147,27 @@ export default function Index() {
 
       const cameraArea = turf.polygon([
         [
-          [minLongitude, minLatitude],
-          [minLongitude, maxLatitude],
           [maxLongitude, minLatitude],
           [maxLongitude, maxLatitude],
+          [minLongitude, maxLatitude],
           [minLongitude, minLatitude],
+          [maxLongitude, minLatitude],
         ],
       ]);
       const unknownArea = getUnknownArea(cameraArea, knownAreaRef.current);
-      // const { data, error } = await supabase.rpc("facts_in_view", {
-      //   min_lat: minLatitude,
-      //   min_long: minLongitude,
-      //   max_lat: maxLatitude,
-      //   max_long: maxLongitude,
-      // });
-      // console.log(data);
-      // setState((prev) => ({ ...prev, facts: data }));
-      knownAreaRef.current = getNewKnownArea(cameraArea, knownAreaRef.current);
+      if (unknownArea?.geometry){
+        const { data, error } = await supabase.rpc("facts_in_area", {
+          user_id: sessionUser.id,
+          polygons: unknownArea.geometry,
+        });
+        console.log("NEW", data);
+        addMapFacts(data);
+        const knownArea = getNewKnownArea(cameraArea, knownAreaRef.current);
+        knownAreaRef.current = knownArea;
+        if (__DEV__ && DEBUG_MODE){
+          setState((prev) => ({ ...prev, knownArea, unknownArea }));
+        }
+      }
     } catch (err) {
       console.error(err);
       alert(i18n.t("default_error_message"));
@@ -278,89 +253,6 @@ export default function Index() {
     mapRef.current.animateToRegion(newRegion, 1000);
   };
 
-  const onFactDeleted = (factToDelete: FactType) => {
-    // remove from local state
-    setState((prev) => ({
-      ...prev,
-      facts: prev.facts.filter((fact) => fact.id !== factToDelete.id),
-    }));
-    setUserFactsList(
-      userFacts.list.filter((fact) => fact.id !== factToDelete.id)
-    );
-  };
-
-  const onFactDownvoted = (factToUpdate: FactType) => {
-    // update in local state
-    const getUpdatedFact = (fact: FactType) => {
-      return {
-        ...fact,
-        score:
-          fact.uservote === null
-            ? fact.score - 1
-            : fact.uservote === 1
-            ? fact.score - 2
-            : fact.score + 1,
-        votecount:
-          fact.uservote === null
-            ? fact.votecount + 1
-            : fact.uservote === 1
-            ? fact.votecount
-            : fact.votecount - 1,
-        uservote: fact.uservote === null || fact.uservote === 1 ? -1 : null,
-      };
-    };
-    setState((prev) => ({
-      ...prev,
-      facts: prev.facts.map((fact) =>
-        fact.id === factToUpdate.id ? getUpdatedFact(fact) : fact
-      ),
-    }));
-    setUserFactsList(
-      userFacts.list.map((fact) =>
-        fact.id === factToUpdate.id ? getUpdatedFact(fact) : fact
-      )
-    );
-    if (selectedFact) {
-      setSelectedFact(getUpdatedFact(selectedFact));
-    }
-  };
-
-  const onFactUpvoted = (factToUpdate: FactType) => {
-    // update in local state
-    const getUpdatedFact = (fact: FactType) => {
-      return {
-        ...fact,
-        score:
-          fact.uservote === null
-            ? fact.score + 1
-            : fact.uservote === -1
-            ? fact.score + 2
-            : fact.score - 1,
-        votecount:
-          fact.uservote === null
-            ? fact.votecount + 1
-            : fact.uservote === -1
-            ? fact.votecount
-            : fact.votecount - 1,
-        uservote: fact.uservote === null || fact.uservote === -1 ? 1 : null,
-      };
-    };
-    setState((prev) => ({
-      ...prev,
-      facts: prev.facts.map((fact) =>
-        fact.id === factToUpdate.id ? getUpdatedFact(fact) : fact
-      ),
-    }));
-    setUserFactsList(
-      userFacts.list.map((fact) =>
-        fact.id === factToUpdate.id ? getUpdatedFact(fact) : fact
-      )
-    );
-    if (selectedFact) {
-      setSelectedFact(getUpdatedFact(selectedFact));
-    }
-  };
-
   return (
     <View style={{ flex: 1, position: "relative" }}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -374,8 +266,10 @@ export default function Index() {
         onRegionChange={onRegionChange}
         minZoomLevel={12}
         customMapStyle={CUSTOM_MAP_STYLE}
+        rotateEnabled={false}
+        pitchEnabled={false}
       >
-        {state.facts.map((fact) => (
+        {mapFacts.map((fact) => (
           <Marker
             key={fact.id}
             coordinate={{ latitude: fact.latitude, longitude: fact.longitude }}
@@ -415,19 +309,7 @@ export default function Index() {
           </Marker>
         ))}
         {!selectedFact && (
-          <Heatmap
-            opacity={0.8}
-            radius={60}
-            gradient={{
-              colors: ["transparent", "#0FACFD", "#FFFC01", "#F33C58"],
-              startPoints: [0.0, 0.2, 0.6, 1.0],
-              colorMapSize: 256,
-            }}
-            points={state.facts.map((fact) => ({
-              latitude: fact.latitude,
-              longitude: fact.longitude,
-            }))}
-          />
+          <CustomHeatmap mapFacts={mapFacts} />
         )}
         {selectedFact && (
           <Circle
@@ -441,224 +323,207 @@ export default function Index() {
             strokeWidth={2}
           />
         )}
+        {state.createMode && (
+          <Circle
+            center={{
+              latitude: region.latitude,
+              longitude: region.longitude,
+            }}
+            radius={createFactRadius}
+            strokeColor={theme.colors.primary}
+            fillColor="#0BA8F720"
+            strokeWidth={2}
+          />
+        )}
+        {__DEV__ && DEBUG_MODE && state.debugKnownArea?.geometry.coordinates.map((polygon, index) => {
+          return (
+            <Polygon
+              key={`known-area-polys-${index}`}
+              coordinates={polygon.map((coords) => ({
+                latitude: coords[1] as number,
+                longitude: coords[0] as number,
+              }))}
+              strokeColor="#00F"
+              fillColor="rgba(0,0,255,0.5)"
+              strokeWidth={1}
+            />
+          );
+        })}
+        {__DEV__ && DEBUG_MODE && state.debugUnknownArea?.geometry.coordinates.map((polygon, index) => {
+          return (
+            <Polygon
+              key={`unknown-area-polys-${index}`}
+              coordinates={polygon.map((coords) => ({
+                latitude: coords[1] as number,
+                longitude: coords[0] as number,
+              }))}
+              strokeColor="#0F0"
+              fillColor="rgba(0,255,0,0.5)"
+              strokeWidth={1}
+            />
+          );
+        })}
       </MapView>
-      <SafeAreaView
-        style={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          pointerEvents: "box-none",
-        }}
-      >
-        <View style={{ flex: 1, pointerEvents: "box-none" }}>
-          <View
-            style={{
-              position: "absolute",
-              bottom: 0,
-              alignSelf: "center",
-            }}
-          >
-            {state.centerLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <>
-                <Icon
-                  raised
-                  name="location-arrow"
-                  type="font-awesome"
-                  onPress={() => getPositionAndCenter(true)}
-                  size={20}
-                />
-                {!locationEnabled && (
-                  <Badge
-                    status="error"
-                    value={
-                      <Icon
-                        name="alert"
-                        type="ionicon"
-                        color="white"
-                        size={12}
-                      />
-                    }
-                    containerStyle={{ position: "absolute", top: 0, right: 0 }}
-                  />
-                )}
-              </>
-            )}
-          </View>
-          <Icon
-            containerStyle={{
-              position: "absolute",
-              bottom: 0,
-              right: 16,
-              marginHorizontal: 0,
-              marginVertical: 0,
-            }}
-            raised
-            name="chat-plus"
-            type="material-community"
-            reverse
-            color={theme.colors.primary}
-            onPress={() => {
-              setState((prev) => ({ ...prev, createMode: true }));
-              createFactBottomSheetRef.current?.present();
-            }}
-          />
-          <Icon
-            containerStyle={{
-              position: "absolute",
-              top: 0,
-              left: 16,
-              marginHorizontal: 0,
-              marginVertical: 0,
-            }}
-            name="user-alt"
-            type="font-awesome-5"
-            reverse
-            color="rgba(0, 0, 0, 0.3)"
-            onPress={() => {
-              onDismissSelectedFact();
-              router.push("/app/home/account");
-            }}
-            size={20}
-          />
-          {state.factsLoading && (
-            <ActivityIndicator
-              color={theme.colors.white}
-              size="large"
-              style={{ position: "absolute", top: 5, alignSelf: "center" }}
-            />
-          )}
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 16,
-              marginHorizontal: 0,
-              marginVertical: 0,
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
-            <Icon
-              containerStyle={{
-                marginHorizontal: 0,
-                marginVertical: 0,
-              }}
-              name="search"
-              type="font-awesome"
-              reverse
-              color="rgba(0, 0, 0, 0.3)"
-              onPress={() => {
-                onDismissSelectedFact();
-                router.push("/app/home/search");
-              }}
-              size={20}
-            />
-            <Icon
-              containerStyle={{
-                marginHorizontal: 0,
-                marginVertical: 0,
-              }}
-              iconStyle={{
-                color: theme.colors.primary,
-              }}
-              name="radar"
-              type="material-community"
-              reverse
-              color="rgba(0, 0, 0, 0.3)"
-              onPress={() => {
-                onDismissSelectedFact();
-                router.push("/app/home/radar-settings");
-              }}
-              size={20}
-            />
-          </View>
-        </View>
-        <BottomSheetModal
-          ref={viewFactBottomSheetRef}
-          index={0}
-          snapPoints={["30%"]}
-          enablePanDownToClose={true}
-          onDismiss={onDismissSelectedFact}
-          backgroundStyle={{ backgroundColor: theme.colors.background }}
-          handleIndicatorStyle={{ backgroundColor: theme.colors.grey2 }}
+      {!state.createMode && (
+        <SafeAreaView
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            pointerEvents: "box-none",
+          }}
         >
-          {selectedFact && (
-            <Fact
-              fact={selectedFact}
-              onClose={onDismissSelectedFact}
-              onCenter={() => onCenter(selectedFact)}
-              onDeleted={() => onFactDeleted(selectedFact)}
-              onDownvoted={() => onFactDownvoted(selectedFact)}
-              onUpvoted={() => onFactUpvoted(selectedFact)}
-            />
-          )}
-        </BottomSheetModal>
-        <BottomSheetModal
-          ref={createFactBottomSheetRef}
-          index={0}
-          snapPoints={["12%"]}
-          enablePanDownToClose={false}
-          onDismiss={() => {}}
-          backgroundStyle={{ backgroundColor: theme.colors.background }}
-          enableHandlePanningGesture={false}
-          handleComponent={() => <></>}
-          backdropComponent={CreateFactCustomBackdrop}
-          //handleIndicatorStyle={{ backgroundColor: theme.colors.grey2 }}
-        >
-          <View
-            style={{
-              flex: 1,
-              paddingHorizontal: 16,
-              gap: 8,
-              marginBottom: safeAreaInsets.bottom,
-            }}
-          >
-            <View style={{ flex: 1 }} />
+          <View style={{ flex: 1, pointerEvents: "box-none" }}>
             <View
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 6,
+                position: "absolute",
+                bottom: 0,
+                alignSelf: "center",
               }}
             >
-              <Button
+              {state.centerLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Icon
+                    raised
+                    name="location-arrow"
+                    type="font-awesome"
+                    onPress={() => getPositionAndCenter(true)}
+                    size={20}
+                  />
+                  {!locationEnabled && (
+                    <Badge
+                      status="error"
+                      value={
+                        <Icon
+                          name="alert"
+                          type="ionicon"
+                          color="white"
+                          size={12}
+                        />
+                      }
+                      containerStyle={{
+                        position: "absolute",
+                        top: 0,
+                        right: 0,
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </View>
+            <Icon
+              containerStyle={{
+                position: "absolute",
+                bottom: 0,
+                right: 16,
+                marginHorizontal: 0,
+                marginVertical: 0,
+              }}
+              raised
+              name="chat-plus"
+              type="material-community"
+              reverse
+              color={theme.colors.primary}
+              onPress={() => {
+                setState((prev) => ({ ...prev, createMode: true }));
+              }}
+            />
+            <Icon
+              containerStyle={{
+                position: "absolute",
+                top: 0,
+                left: 16,
+                marginHorizontal: 0,
+                marginVertical: 0,
+              }}
+              name="user-alt"
+              type="font-awesome-5"
+              reverse
+              color="rgba(0, 0, 0, 0.3)"
+              onPress={() => {
+                onDismissSelectedFact();
+                router.push("/app/home/account");
+              }}
+              size={20}
+            />
+            {state.factsLoading && (
+              <ActivityIndicator
+                color={theme.colors.white}
+                size="large"
+                style={{ position: "absolute", top: 5, alignSelf: "center" }}
+              />
+            )}
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 16,
+                marginHorizontal: 0,
+                marginVertical: 0,
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              <Icon
+                containerStyle={{
+                  marginHorizontal: 0,
+                  marginVertical: 0,
+                }}
+                name="search"
+                type="font-awesome"
+                reverse
+                color="rgba(0, 0, 0, 0.3)"
                 onPress={() => {
-                  setState((prev) => ({ ...prev, createMode: false }));
-                  createFactBottomSheetRef.current?.close();
+                  onDismissSelectedFact();
+                  router.push("/app/home/search");
                 }}
-                containerStyle={{ flex: 1 }}
-                buttonStyle={{
-                  backgroundColor: theme.colors.grey3,
+                size={20}
+              />
+              <Icon
+                containerStyle={{
+                  marginHorizontal: 0,
+                  marginVertical: 0,
                 }}
-                titleStyle={{
-                  color: theme.colors.black,
-                  fontSize: 16,
+                iconStyle={{
+                  color: theme.colors.primary,
                 }}
-                //disabled={state.downvoteLoading || state.upvoteLoading}
-              >
-                Cancel
-              </Button>
-              <Button
-                onPress={() => {}}
-                containerStyle={{ flex: 1 }}
-                buttonStyle={{
-                  backgroundColor: theme.colors.primary,
+                name="radar"
+                type="material-community"
+                reverse
+                color="rgba(0, 0, 0, 0.3)"
+                onPress={() => {
+                  onDismissSelectedFact();
+                  router.push("/app/home/radar-settings");
                 }}
-                titleStyle={{
-                  color: "white",
-                  fontSize: 16,
-                }}
-                //loading={state.upvoteLoading}
-                //disabled={state.downvoteLoading || state.upvoteLoading}
-              >
-                Post
-              </Button>
+                size={20}
+              />
             </View>
           </View>
-        </BottomSheetModal>
-      </SafeAreaView>
+        </SafeAreaView>
+      )}
+      <BottomSheetModal
+        ref={viewFactBottomSheetRef}
+        index={0}
+        snapPoints={["30%"]}
+        enablePanDownToClose={true}
+        onDismiss={onDismissSelectedFact}
+        backgroundStyle={{ backgroundColor: theme.colors.background }}
+        handleIndicatorStyle={{ backgroundColor: theme.colors.grey2 }}
+      >
+        {selectedFact && (
+          <Fact
+            fact={selectedFact}
+            onClose={onDismissSelectedFact}
+            onCenter={() => onCenter(selectedFact)}
+          />
+        )}
+      </BottomSheetModal>
+      <CreateFactEditor
+        open={state.createMode}
+        onClose={() => setState((prev) => ({ ...prev, createMode: false }))}
+      />
     </View>
   );
 }
