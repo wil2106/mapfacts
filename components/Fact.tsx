@@ -9,6 +9,7 @@ import { formatDistance } from "date-fns";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { supabase } from "../supabase/supabase";
+import { isTrending } from "../helpers/utils";
 
 export default function Fact({
   fact,
@@ -352,6 +353,14 @@ export default function Fact({
           >
             {`(${fact.votecount})`}
           </Text>
+          {isTrending(fact) && (
+            <Icon
+              name="trending-up"
+              type="material-community"
+              size={20}
+              color={theme.colors.secondary}
+            />
+          )}
         </View>
       </View>
       {sessionUser?.id !== fact.authorid && (

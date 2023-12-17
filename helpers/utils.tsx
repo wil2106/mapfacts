@@ -1,5 +1,7 @@
 import * as turf from "@turf/turf";
 import { Region } from "react-native-maps";
+import { FactType } from "../types";
+import { TRENDING_MIN_VOTES } from "./constants";
 
 export const getFontSize = (score: number) => {
   if (score < 0) {
@@ -54,4 +56,8 @@ export const getRegion = (
   };
 
   return region;
+}
+
+export const isTrending = (fact: FactType) => {
+  return fact.recentvotecount >= TRENDING_MIN_VOTES;
 }

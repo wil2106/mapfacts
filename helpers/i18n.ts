@@ -85,6 +85,12 @@ const i18n = new I18n({
       sign_out_dialog_text: "Are you sure you want to sign out?",
       delete_account_dialog_text: "Are you sure you want to delete your account?",
       cancel: "Cancel",
+    },
+    radar_settings: {
+      info: "Get notified when you enter a fact zone !",
+      activation: "Activation",
+      min_upvotes: "Minimum upvotes",
+      cooldown: "Cooldown"
     }
   },
   fr: {
@@ -170,6 +176,12 @@ const i18n = new I18n({
       sign_out_dialog_text: "Es-tu sûr de vouloir te déconnecter ?",
       delete_account_dialog_text: "Es-tu sûr de vouloir supprimer ton compte ?",
       cancel: "annuler",
+    },
+    radar_settings: {
+      info: "Soyez notifié lorsque vous entrez dans la zone d'un post!",
+      activation: "Activation",
+      min_upvotes: "Votes positifs minimum",
+      cooldown: "Délai"
     }
   },
 });

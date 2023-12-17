@@ -1,5 +1,14 @@
-import { Avatar, Button, ListItem, Text, useTheme } from "@rneui/themed";
+import {
+  Avatar,
+  Button,
+  Chip,
+  Icon,
+  ListItem,
+  Text,
+  useTheme,
+} from "@rneui/themed";
 import { FactType } from "../types";
+import { isTrending } from "../helpers/utils";
 
 export default function FactItem({
   first,
@@ -39,7 +48,14 @@ export default function FactItem({
       >
         {`(${fact.votecount})`}
       </Text>
-      {/* {fact.isHot && <Text>🔥</Text>} */}
+      {isTrending(fact) && (
+        <Icon
+          name="trending-up"
+          type="material-community"
+          size={20}
+          color={theme.colors.secondary}
+        />
+      )}
       <ListItem.Chevron />
     </ListItem>
   );

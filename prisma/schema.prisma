@@ -15,7 +15,7 @@ model User {
   notificationsEnabled Boolean @default(true)
   radarEnabled Boolean @default(false)
   radarMinUpvotes Int @default(10)
-  radarCooldownS Int @default(0)
+  radarCooldownS Int @default(60)
   lastRadarNotificationAt DateTime?
 
   facts Fact[]

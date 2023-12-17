@@ -9,6 +9,8 @@ export const SHARE_APP_URL = "https://mapfacts.app/";
 export const BASE_LATITUDE_DELTA = 0.0922;
 export const BASE_LONGITUDE_DELTA = 0.0421;
 
+export const TRENDING_MIN_VOTES = 5;
+
 export const CUSTOM_MAP_STYLE = [
   {
     "elementType": "geometry",

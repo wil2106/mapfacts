@@ -47,6 +47,8 @@ import { HandledError } from "../../../helpers/error";
 import Fact from "../../../components/Fact";
 import CreateFactEditor from "../../../components/CreateFactEditor";
 import CustomHeatmap from "../../../components/CustomHeatMap";
+import FactLabel from "../../../components/FactLabel";
+import RadarButton from "../../../components/RadarButton";
 
 const DEBUG_MODE = false;
 
@@ -95,6 +97,8 @@ export default function Index() {
   const createFactRadius = useFlashStore((state) => state.createFactRadius);
   const sessionUser = useFlashStore((state) => state.sessionUser);
   const addMapFacts = useFlashStore((state) => state.addMapFacts);
+  const user = useFlashStore((state) => state.user);
+  const pushNotificationsEnabled = useFlashStore((state) => state.pushNotificationsEnabled);
 
   useEffect(() => {
     if (!pushNotificationPermRequested) {
@@ -155,7 +159,7 @@ export default function Index() {
         ],
       ]);
       const unknownArea = getUnknownArea(cameraArea, knownAreaRef.current);
-      if (unknownArea?.geometry){
+      if (unknownArea?.geometry) {
         const { data, error } = await supabase.rpc("facts_in_area", {
           user_id: sessionUser.id,
           polygons: unknownArea.geometry,
@@ -164,7 +168,7 @@ export default function Index() {
         addMapFacts(data);
         const knownArea = getNewKnownArea(cameraArea, knownAreaRef.current);
         knownAreaRef.current = knownArea;
-        if (__DEV__ && DEBUG_MODE){
+        if (__DEV__ && DEBUG_MODE) {
           setState((prev) => ({ ...prev, knownArea, unknownArea }));
         }
       }
@@ -289,28 +293,10 @@ export default function Index() {
               }
             }}
           >
-            <Text
-              style={{
-                textAlign: "center",
-                color: fact.color,
-                fontFamily: "Fredoka_SemiBold",
-                fontSize: getFontSize(fact.score),
-                shadowColor: theme.colors.black,
-                shadowOffset: {
-                  width: 1,
-                  height: 2,
-                },
-                shadowOpacity: 1,
-                shadowRadius: 0,
-              }}
-            >
-              {fact.text}
-            </Text>
+            <FactLabel fact={fact} />
           </Marker>
         ))}
-        {!selectedFact && (
-          <CustomHeatmap mapFacts={mapFacts} />
-        )}
+        {!selectedFact && <CustomHeatmap mapFacts={mapFacts} />}
         {selectedFact && (
           <Circle
             center={{
@@ -335,34 +321,38 @@ export default function Index() {
             strokeWidth={2}
           />
         )}
-        {__DEV__ && DEBUG_MODE && state.debugKnownArea?.geometry.coordinates.map((polygon, index) => {
-          return (
-            <Polygon
-              key={`known-area-polys-${index}`}
-              coordinates={polygon.map((coords) => ({
-                latitude: coords[1] as number,
-                longitude: coords[0] as number,
-              }))}
-              strokeColor="#00F"
-              fillColor="rgba(0,0,255,0.5)"
-              strokeWidth={1}
-            />
-          );
-        })}
-        {__DEV__ && DEBUG_MODE && state.debugUnknownArea?.geometry.coordinates.map((polygon, index) => {
-          return (
-            <Polygon
-              key={`unknown-area-polys-${index}`}
-              coordinates={polygon.map((coords) => ({
-                latitude: coords[1] as number,
-                longitude: coords[0] as number,
-              }))}
-              strokeColor="#0F0"
-              fillColor="rgba(0,255,0,0.5)"
-              strokeWidth={1}
-            />
-          );
-        })}
+        {__DEV__ &&
+          DEBUG_MODE &&
+          state.debugKnownArea?.geometry.coordinates.map((polygon, index) => {
+            return (
+              <Polygon
+                key={`known-area-polys-${index}`}
+                coordinates={polygon.map((coords) => ({
+                  latitude: coords[1] as number,
+                  longitude: coords[0] as number,
+                }))}
+                strokeColor="#00F"
+                fillColor="rgba(0,0,255,0.5)"
+                strokeWidth={1}
+              />
+            );
+          })}
+        {__DEV__ &&
+          DEBUG_MODE &&
+          state.debugUnknownArea?.geometry.coordinates.map((polygon, index) => {
+            return (
+              <Polygon
+                key={`unknown-area-polys-${index}`}
+                coordinates={polygon.map((coords) => ({
+                  latitude: coords[1] as number,
+                  longitude: coords[0] as number,
+                }))}
+                strokeColor="#0F0"
+                fillColor="rgba(0,255,0,0.5)"
+                strokeWidth={1}
+              />
+            );
+          })}
       </MapView>
       {!state.createMode && (
         <SafeAreaView
@@ -408,6 +398,7 @@ export default function Index() {
                         top: 0,
                         right: 0,
                       }}
+                      badgeStyle={{ borderWidth: 0 }}
                     />
                   )}
                 </>
@@ -481,23 +472,12 @@ export default function Index() {
                 }}
                 size={20}
               />
-              <Icon
-                containerStyle={{
-                  marginHorizontal: 0,
-                  marginVertical: 0,
-                }}
-                iconStyle={{
-                  color: theme.colors.primary,
-                }}
-                name="radar"
-                type="material-community"
-                reverse
-                color="rgba(0, 0, 0, 0.3)"
+              <RadarButton
+                enabled={!!user?.radarEnabled}
                 onPress={() => {
                   onDismissSelectedFact();
                   router.push("/app/home/radar-settings");
                 }}
-                size={20}
               />
             </View>
           </View>

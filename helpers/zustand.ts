@@ -21,6 +21,9 @@ interface FlashState {
   user: UserType | null;
   setUser: (value: UserType | null) => void;
   toggleUserNotifications: () => void;
+  toggleUserRadarEnabled: () => void;
+  setUserRadarMinUpVotes: (value: number) => void;
+  setUserRadarCooldown: (value: number) => void;
   locationEnabled: boolean;
   setLocationEnabled: (value: boolean) => void;
   pushNotificationsEnabled: boolean;
@@ -79,6 +82,12 @@ export const useFlashStore = create<FlashState>((set) => ({
   setUser: (value) => set((state) => ({ ...state, user: value })),
   // @ts-ignore
   toggleUserNotifications: () => set((state) => ({ ...state, user: {...state.user, notificationsEnabled: !state.user.notificationsEnabled }})),
+  // @ts-ignore
+  toggleUserRadarEnabled: () => set((state) => ({ ...state, user: {...state.user, radarEnabled: !state.user?.radarEnabled }})),
+  // @ts-ignore
+  setUserRadarMinUpVotes: (value) => set((state) => ({ ...state, user: {...state.user, radarMinUpvotes: value} })),
+  // @ts-ignore
+  setUserRadarCooldown: (value) => set((state) => ({ ...state, user: {...state.user, radarCooldownS: value} })),
   locationEnabled: initialState.locationEnabled,
   setLocationEnabled: (value) => set((state) => ({ locationEnabled: value })),
   pushNotificationsEnabled: initialState.pushNotificationsEnabled,

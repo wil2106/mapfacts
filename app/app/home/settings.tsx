@@ -21,6 +21,7 @@ import {
   SUPPORT_URL,
   WEBSITE_URL,
 } from "../../../helpers/constants";
+import { StatusBar } from "expo-status-bar";
 
 export default function Settings() {
   const { theme } = useTheme();
@@ -143,6 +144,7 @@ export default function Settings() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      <StatusBar style="dark" />
       <ScrollView
         style={{ flex: 1, padding: 16, gap: 10 }}
         refreshControl={

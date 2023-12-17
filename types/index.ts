@@ -30,4 +30,5 @@ export interface FactType {
   authorid: string;
   votecount: number;
   uservote: number | null;
+  recentvotecount: number;
 }
