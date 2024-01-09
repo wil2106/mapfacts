@@ -98,17 +98,14 @@ export default function Index() {
   const sessionUser = useFlashStore((state) => state.sessionUser);
   const addMapFacts = useFlashStore((state) => state.addMapFacts);
   const user = useFlashStore((state) => state.user);
-  const pushNotificationsEnabled = useFlashStore((state) => state.pushNotificationsEnabled);
 
   useEffect(() => {
     if (!pushNotificationPermRequested) {
       return router.replace("/app/home/push-notifications-perm");
     }
     const parsedFactId = parseInt(factId as string);
-    if (isNaN(parsedFactId)) {
-      //getPositionAndCenter(false);
-    } else {
-      getFactAndCenter(parsedFactId);
+    if (!isNaN(parsedFactId) && sessionUser?.id) {
+      getFactAndCenter(parsedFactId, sessionUser.id);
     }
   }, []);
 
@@ -222,10 +219,11 @@ export default function Index() {
     setState((prev) => ({ ...prev, centerLoading: false }));
   };
 
-  const getFactAndCenter = async (factId: number) => {
+  const getFactAndCenter = async (factId: number, userId: string) => {
     try {
       const { data, error } = await supabase.rpc("fact", {
         fact_id: factId,
+        user_id: userId
       });
       if (error) {
         throw error;
