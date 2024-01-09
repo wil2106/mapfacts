@@ -8,6 +8,10 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 
 ## Demo
 
+
+https://github.com/wil2106/mapfacts/assets/25795688/70357d9e-c547-4c89-bae1-5f92ba99966c
+
+
 ## Features
 - Sign in screen
   - Magic link signin (passwordless signin with email)
