@@ -59,13 +59,12 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 - Deploy ./website on vercel for example
 - Create a supabase project
 - In *Supabase/Authentication/Providers* enable email provider
-- In *Supabase/Authentication/Url configuration* set site URL (https://mapfacts.vercel.app/ for example) and Redirect URLs (https://mapfacts.vercel.app/* for example)
+- In *Supabase/Authentication/Url configuration* set site URL (```https://mapfacts.vercel.app/``` for example) and Redirect URLs (```https://mapfacts.vercel.app/*``` for example)
 - Create a google cloud project and enable Maps SDK for Android, Maps SDK for iOS, Places API
 - Create a .env file with supabase DATABASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_PLACES_API_KEY
 - Set googleMapsApiKey in app.json
 - Execute yarn db-push to create database tables
 - Create database functions:
-  - Execute:
 <pre>
     create or replace function fact(fact_id integer, user_id text)
     returns table (
