@@ -1,4 +1,5 @@
-<img src="./assets/images/icon.png" width="100" height="100">
+<img src="./assets/images/icon.png" width="100" height="100" style="border-radius:15px;">
+
 ### Mapfacts
 A crowdsourced map app to learn more about city's neighborhoods (inspired by [hoodmaps](https://hoodmaps.com/)).
 
