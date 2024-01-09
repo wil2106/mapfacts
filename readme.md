@@ -53,8 +53,8 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 - Supabase row level security rules
 
 ## Run locally on ios
-- Install depedencies
-- Make a first build with ```eas build --platform ios --profile development```
+- Install depedencies in root folder and in ./website folder
+- Make a first app build with ```eas build --platform ios --profile development```
 - Fill ./website/public/.well-known/apple-app-site-association
 - Deploy ./website on vercel for example
 - Create a supabase project
@@ -63,6 +63,7 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 - Create a google cloud project and enable Maps SDK for Android, Maps SDK for iOS, Places API
 - Create a .env file with supabase DATABASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_PLACES_API_KEY
 - Set googleMapsApiKey in app.json
+- Set constants links in ./helpers/constants.tsx
 - Execute yarn db-push to create database tables
 - Create database functions:
 <pre>

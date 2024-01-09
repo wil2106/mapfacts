@@ -10,7 +10,7 @@ import validator from "validator";
 import { HandledError } from "../../../helpers/error";
 import { openInbox } from "react-native-email-link";
 import KeyboardAwareContainer from "../../../components/KeyboardAwareContainer";
-import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from "../../../helpers/constants";
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL, WEBSITE_URL } from "../../../helpers/constants";
 
 interface State {
   email: string;
@@ -48,7 +48,7 @@ export default function Signin() {
         email: state.email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: "https://mapfacts.vercel.app/app/onboarding/sign-in",
+          emailRedirectTo: `${WEBSITE_URL}/app/onboarding/sign-in`,
         },
       });
 

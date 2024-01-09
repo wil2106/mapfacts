@@ -17,7 +17,7 @@ import * as Notifications from "expo-notifications";
 import {
   RATE_APP_ANDROID_URL,
   RATE_APP_IOS_URL,
-  SHARE_APP_URL,
+  SHARE_URL,
   SUPPORT_URL,
   WEBSITE_URL,
 } from "../../../helpers/constants";
@@ -213,7 +213,7 @@ export default function Settings() {
           bottomDivider
           onPress={() => {
             Share.share({
-              url: SHARE_APP_URL,
+              url: `${SHARE_URL}`,
             });
           }}
         >

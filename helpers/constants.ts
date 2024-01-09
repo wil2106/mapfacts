@@ -1,10 +1,10 @@
-export const PRIVACY_POLICY_URL = "https://google.com/";
-export const TERMS_OF_SERVICE_URL = "https://google.com/";
+export const PRIVACY_POLICY_URL = "https://mapfacts.vercel.app";
+export const TERMS_OF_SERVICE_URL = "https://mapfacts.vercel.app";
 export const SUPPORT_URL = "https://go.crisp.chat/chat/embed/?website_id=yourwebsiteid";
-export const WEBSITE_URL = "https://google.com/"; 
-export const RATE_APP_IOS_URL = "https://google.com/";
-export const RATE_APP_ANDROID_URL = "https://google.com/";
-export const SHARE_APP_URL = "https://google.com/";
+export const WEBSITE_URL = "https://mapfacts.vercel.app"; 
+export const RATE_APP_IOS_URL = "https://mapfacts.vercel.app";
+export const RATE_APP_ANDROID_URL = "https://mapfacts.vercel.app";
+export const SHARE_URL = "https://mapfacts.vercel.app";
 
 export const BASE_LATITUDE_DELTA = 0.0922;
 export const BASE_LONGITUDE_DELTA = 0.0421;

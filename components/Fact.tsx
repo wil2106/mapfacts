@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { supabase } from "../supabase/supabase";
 import { isTrending } from "../helpers/utils";
+import { WEBSITE_URL } from "../helpers/constants";
 
 export default function Fact({
   fact,
@@ -230,7 +231,7 @@ export default function Fact({
 
   const onShare = () => {
     Share.share({
-      url: "www.google.com",
+      url: `${WEBSITE_URL}/app/home/${fact.id}`,
     });
   }
 
