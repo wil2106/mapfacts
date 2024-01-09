@@ -66,7 +66,7 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 - Create a .env file with supabase DATABASE_URL, SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_PLACES_API_KEY
 - Set googleMapsApiKey in app.json
 - Set constants links in ./helpers/constants.tsx
-- Execute yarn db-push to create database tables
+- Execute ```yarn db-push``` or ```npm run db-push``` to create database tables
 - Create database functions:
 <pre>
     create or replace function fact(fact_id integer, user_id text)
