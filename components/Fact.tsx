@@ -1,4 +1,4 @@
-import { Alert, View } from "react-native";
+import { Alert, View, Share } from "react-native";
 import { FactType } from "../types";
 import { Button, Icon, Text, useTheme } from "@rneui/themed";
 import { useState } from "react";
@@ -228,6 +228,12 @@ export default function Fact({
     }
   };
 
+  const onShare = () => {
+    Share.share({
+      url: "www.google.com",
+    });
+  }
+
   return (
     <View
       style={{
@@ -269,9 +275,17 @@ export default function Fact({
                 case "delete":
                   onDelete();
                   break;
+                case "share":
+                  onShare();
+                  break;
               }
             }}
             actions={[
+              {
+                id: "share",
+                title: i18n.t("fact.share"),
+                titleColor: theme.colors.black,
+              },
               {
                 id: "center",
                 title: i18n.t("fact.recenter"),

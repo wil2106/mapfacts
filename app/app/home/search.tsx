@@ -17,8 +17,7 @@ import { useFlashStore } from "../../../helpers/zustand";
 import { PlaceType } from "../../../types";
 import { StatusBar } from "expo-status-bar";
 import { BASE_LATITUDE_DELTA, BASE_LONGITUDE_DELTA } from "../../../helpers/constants";
-
-const places = [{ title: "Annecy" }, { title: "Paris" }, { title: "Lyon" }];
+import { GOOGLE_PLACES_API_KEY } from '@env';
 
 export default function Search() {
   const { theme } = useTheme();
@@ -37,10 +36,10 @@ export default function Search() {
   const onChangeSearch = (text: string) => {
     setState((prev) => ({ ...prev, search: text }));
     if (
-      !Constants?.expoConfig?.extra?.googlePlacesApiKey ||
+      !GOOGLE_PLACES_API_KEY ||
       !Constants?.expoConfig?.ios?.bundleIdentifier
     ) {
-      throw new Error("No googlePlacesApiKey");
+      throw new Error("No googlePlacesApiKey or bundleIdentifier");
     }
     clearTimeout(timeoutRef.current);
     if (text.length === 0) {
@@ -53,13 +52,13 @@ export default function Search() {
           `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(
             text.trim()
           )}&inputtype=textquery&fields=name,geometry,formatted_address&key=${
-            Constants!.expoConfig!.extra!.googlePlacesApiKey
+            GOOGLE_PLACES_API_KEY
           }`,
           {
             headers: {
               "Content-Type": "application/json",
               "X-Goog-Api-Key":
-                Constants!.expoConfig!.extra!.googlePlacesApiKey,
+                GOOGLE_PLACES_API_KEY,
               "X-Ios-Bundle-Identifier":
                 Constants!.expoConfig!.ios!.bundleIdentifier,
             },

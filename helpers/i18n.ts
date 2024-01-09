@@ -45,6 +45,7 @@ const i18n = new I18n({
       no_more_results: "No more results",
     },
     fact: {
+      share: "Share",
       recenter: "Recenter",
       report: "Report",
       delete: "Delete",
@@ -136,6 +137,7 @@ const i18n = new I18n({
       no_more_results: "Il n'y a pas plus de posts",
     },
     fact: {
+      share: "Partager",
       recenter: "Recentrer",
       report: "Signaler",
       delete: "Supprimer",
