@@ -1,4 +1,4 @@
-![](./assets/images/icon.png)
+![](./assets/images/icon.png | width=100)
 ### Mapfacts
 A crowdsourced map app to learn more about city's neighborhoods (inspired by [hoodmaps](https://hoodmaps.com/)).
 
