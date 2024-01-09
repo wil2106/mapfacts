@@ -9,6 +9,7 @@ import {
 } from "@rneui/themed";
 import { FactType } from "../types";
 import { isTrending } from "../helpers/utils";
+import { View } from "react-native";
 
 export default function FactItem({
   first,
@@ -31,31 +32,34 @@ export default function FactItem({
           {fact.text}
         </Text>
       </ListItem.Content>
-      <Text
-        style={{
-          fontFamily: "Fredoka_Medium",
-          color: fact.score >= 0 ? theme.colors.primary : theme.colors.tertiary,
-        }}
-      >
-        {fact.score > 0 ? "+" : ""}
-        {fact.score}
-      </Text>
-      <Text
-        style={{
-          fontFamily: "Fredoka_Regular",
-          color: theme.colors.grey0,
-        }}
-      >
-        {`(${fact.votecount})`}
-      </Text>
-      {isTrending(fact) && (
-        <Icon
-          name="trending-up"
-          type="material-community"
-          size={20}
-          color={theme.colors.secondary}
-        />
-      )}
+      <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
+        <Text
+          style={{
+            fontFamily: "Fredoka_Medium",
+            color:
+              fact.score >= 0 ? theme.colors.primary : theme.colors.tertiary,
+          }}
+        >
+          {fact.score > 0 ? "+" : ""}
+          {fact.score}
+        </Text>
+        <Text
+          style={{
+            fontFamily: "Fredoka_Regular",
+            color: theme.colors.grey0,
+          }}
+        >
+          {`(${fact.votecount})`}
+        </Text>
+        {isTrending(fact) && (
+          <Icon
+            name="trending-up"
+            type="material-community"
+            size={20}
+            color={theme.colors.secondary}
+          />
+        )}
+      </View>
       <ListItem.Chevron />
     </ListItem>
   );

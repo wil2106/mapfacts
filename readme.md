@@ -12,7 +12,7 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 - Sign in screen
   - Magic link signin (passwordless signin with email)
 - Home screen
-  - Display facts on the map depending on zoom level and number of likes (Thanks to Turf, we only query facts visible on the screen and not previously fetched)
+  - Visibility and size of facts on the map depends on zoom level and number of upvotes (Thanks to Turf, we only query facts visible on the screen and not previously fetched)
   - Display heatmap where facts are
   - Recenter to current location
 - Fact screen
@@ -37,7 +37,7 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
   - Open website
   - Rate app
   - Share app
-  - Open Privacy polocy and TOU
+  - Open Privacy policy and TOU
   - Sign out
   - Delete account
 - Radar screen
@@ -46,6 +46,7 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
   - Set min delay between alerts
 
 ## TO-DO
+- Fix vote counts
 - Notifications with supabase edge functions and expo notifications api
 - Radar feature to get notified when you physically enter a zone (like in skyrim) expo-task-manager, supabase edge function and expo notifications api
 - Landing page website
