@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "JAFCAD4JA2.com.wil2106.mapfacts",
-        "paths": ["/*"]
+        "paths": ["*"]
       }
     ]
   },

@@ -6,7 +6,7 @@ function App() {
       <header className="App-header">
         <img src="/logo.png" className="App-logo" alt="logo" />
         <p>
-          MapFacts v2
+          MapFacts v3
         </p>
       </header>
     </div>

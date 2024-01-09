@@ -45,8 +45,8 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
   - Set min delay between alerts
 
 ## TO-DO
-- Notifications
-- Radar feature to get notified when you physically enter a zone (like in skyrim)
+- Notifications with supabase edge functions and expo notifications api
+- Radar feature to get notified when you physically enter a zone (like in skyrim) expo-task-manager, supabase edge function and expo notifications api
 - Landing page website
 - Testing
 - Comments
@@ -55,6 +55,7 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 ## Run locally on ios
 - Install depedencies in root folder and in ./website folder
 - Make a first app build with ```eas build --platform ios --profile development```
+- Update app.json
 - Fill ./website/public/.well-known/apple-app-site-association
 - Deploy ./website on vercel for example
 - Create a supabase project
