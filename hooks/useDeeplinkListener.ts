@@ -6,6 +6,7 @@ export default function useDeeplinkListener() {
   useEffect(() => {
     const handleUrlRedirect = async (url: string | null) => {
       if (!url) return;
+      console.log(url);
 
       // Extract the part after the '#'
       const fragment = url.split("#")[1];
