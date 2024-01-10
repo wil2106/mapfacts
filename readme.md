@@ -9,7 +9,9 @@ Typescript, React-Native, Expo, expo-router, React-Native Elements, Zustand, Tur
 ## Demo
 
 
-https://github.com/wil2106/mapfacts/assets/25795688/70357d9e-c547-4c89-bae1-5f92ba99966c
+https://github.com/wil2106/mapfacts/assets/25795688/d62a43f3-f1e2-45fb-b66d-2c3ccf204e12
+
+
 
 
 ## Features
